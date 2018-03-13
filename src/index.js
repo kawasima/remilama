@@ -1,14 +1,39 @@
-const { Peer } = require('peerjs')
+import React from 'react'
+import { AppContainer } from 'react-hot-loader'
+import ReactDOM from 'react-dom'
+import { Provider } from 'react-redux'
+import store from './store'
+import App from './components/App'
+
+const root = document.querySelector('#root')
+
+if (process.env.NODE_ENV === 'production') {
+  ReactDOM.render(<Provider store={store}><App/></Provider>, root)
+} else {
+    ReactDOM.render(
+      <Provider store={store}>
+        <App/>
+      </Provider>,
+      root
+    )
+}
+
+/*
+const Peer = require('peerjs')
 
 const peer = new Peer({
-  // Set API key for cloud server (you don't need this if you're running your
-  // own.
-  key: 'x7fwx2kavpy6tj4i',
+  host: 'localhost',
+  port: 9000,
+  path: '/peerjs',
   // Set highest debug level (log everything!).
   debug: 3,
   // Set a logging function:
   logFunction: function() {
     var copy = Array.prototype.slice.call(arguments).join(' ');
-    $('.log').append(copy + '<br>');
+    console.log(copy)
   }
 });
+
+const conn = peer.connect('')
+conn.on('open', () => conn.send('hi!'))
+*/

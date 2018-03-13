@@ -16,6 +16,8 @@
         "plugins": [
           "react-hot-loader/babel",
           "@babel/plugin-transform-react-jsx",
+          "@babel/plugin-transform-async-to-generator",
+          "@babel/plugin-transform-runtime",
           "@babel/plugin-syntax-dynamic-import",
           "@babel/plugin-syntax-object-rest-spread"
         ]
@@ -42,6 +44,7 @@
     "@babel/core": "^7.0.0-beta.40",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0-beta.40",
     "@babel/plugin-syntax-object-rest-spread": "^7.0.0-beta.40",
+    "@babel/plugin-transform-async-to-generator": "^7.0.0-beta.40",
     "@babel/plugin-transform-react-jsx": "^7.0.0-beta.40",
     "@babel/preset-env": "^7.0.0-beta.40",
     "babel-loader": "8.0.0-beta.0",
@@ -51,6 +54,7 @@
     "webpack": "^4.1.0",
     "webpack-cli": "^2.0.10",
     "webpack-dev-server": "^3.1.0",
+    "webpack-hot-middleware": "^2.21.2",
     "webpack-merge": "^4.1.2"
   }
 }

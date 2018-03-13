@@ -13,9 +13,10 @@ module.exports = merge(baseConfig, {
     contentBase: path.resolve(path.join(__dirname, 'public')),
     port: 3355
   },
-
   devtool: 'cheap-module-eval-source-map',
   plugins: [
+    new webpack.NamedModulesPlugin(),
+    new webpack.NoEmitOnErrorsPlugin(),
     new webpack.HotModuleReplacementPlugin()
   ]
 });

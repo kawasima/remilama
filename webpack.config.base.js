@@ -2,7 +2,9 @@ const webpack = require('webpack')
 
 const BASE_PLUGINS = [
   new webpack.DefinePlugin({
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    'process.env': {
+      'NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+    }
   })
 ]
 
@@ -13,15 +15,9 @@ module.exports = {
   output: {
     path: __dirname + '/public',
     filename: 'bundle.js',
-    publicPath: '/public/'
+    publicPath: '/'
   },
-  plugins: process.env.NODE_ENV === 'production'
-    ? BASE_PLUGINS
-    : BASE_PLUGINS.concat([
-      new webpack.NamedModulesPlugin(),
-      new webpack.NoEmitOnErrorsPlugin(),
-      new webpack.HotModuleReplacementPlugin()
-    ]),
+  plugins: BASE_PLUGINS,
   module: {
     rules: [
       {

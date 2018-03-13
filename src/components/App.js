@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
-import { BrowserRouter, Route, Switch, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch, Link, withRouter } from 'react-router-dom'
 import { history } from '../store'
 import Layout from './Layout'
 import ChannelContainer from '../containers/ChannelContainer'
+import ReviewContainer from '../containers/ReviewContainer'
 
 const Home = () => (
   <div>
@@ -16,13 +17,15 @@ const App = () => {
   const routing = (
     <Switch>
       <Route exact path='/' component={Home} />
-      <Route path='/channel' component={ChannelContainer}/>
+      <Route exact path='/xxx/:id' component={ReviewContainer}/>
+      <Route path='/channel' component={ChannelContainer}
+             onChannelCreate={(state, replace) => state}/>
     </Switch>)
 
   return (
-    <BrowserRouter history={history}>
+    <Router history={history}>
       <Layout children={routing}/>
-    </BrowserRouter>
+    </Router>
   )
 }
 

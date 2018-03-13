@@ -10,12 +10,19 @@ const root = document.querySelector('#root')
 if (process.env.NODE_ENV === 'production') {
   ReactDOM.render(<Provider store={store}><App/></Provider>, root)
 } else {
+  const render = async () => {
+    const { default: App } = (await import('./components/App'))
     ReactDOM.render(
-      <Provider store={store}>
-        <App/>
-      </Provider>,
+      <AppContainer>
+        <Provider store={store}>
+          <App/>
+        </Provider>
+      </AppContainer>,
       root
     )
+  }
+  render()
+  if (module.hot) module.hot.accept('./components/App', render)
 }
 
 /*

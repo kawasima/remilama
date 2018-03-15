@@ -2,28 +2,25 @@ import React, { Component } from 'react'
 import { BrowserRouter as Router, Route, Switch, Link, withRouter } from 'react-router-dom'
 import { history } from '../store'
 import Layout from './Layout'
-import ChannelContainer from '../containers/ChannelContainer'
-import ReviewContainer from '../containers/ReviewContainer'
+import HomeContainer from '../containers/HomeContainer'
+import ReviewerContainer from '../containers/ReviewerContainer'
+import RevieweeContainer from '../containers/RevieweeContainer'
+import ReviewCreateFormContainer from '../containers/ReviewCreateFormContainer'
 
-const Home = () => (
-  <div>
-    <h2>Menu</h2>
-
-    <Link to='/channel'>Channel</Link>
-  </div>
-)
+import PdfDocument from '../components/PdfDocument'
 
 const App = () => {
   const routing = (
     <Switch>
-      <Route exact path='/' component={Home} />
-      <Route exact path='/xxx/:id' component={ReviewContainer}/>
-      <Route path='/channel' component={ChannelContainer}
-             onChannelCreate={(state, replace) => state}/>
+      <Route exact path='/' component={HomeContainer} />
+      <Route path='/review/new' component={ReviewCreateFormContainer}/>
+      <Route path='/review/:id/reviewer' component={ReviewerContainer}/>
+      <Route path='/review/:id' component={RevieweeContainer}/>
+      <Route path='/pdf' component={PdfDocument}/>
     </Switch>)
 
   return (
-    <Router history={history}>
+    <Router>
       <Layout children={routing}/>
     </Router>
   )

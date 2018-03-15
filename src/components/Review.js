@@ -1,4 +1,10 @@
 import React from 'react'
+import Peer from 'peerjs'
 
-export default () =>
-  <h2>Review</h2>
+export default ({ id, name, onSelectFile }) => {
+  return (
+    <div className="ui raised segment">
+      <p>Review: {name} ({id})</p>
+    </div>
+  )
+}

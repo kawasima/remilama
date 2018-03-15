@@ -24,23 +24,3 @@ if (process.env.NODE_ENV === 'production') {
   render()
   if (module.hot) module.hot.accept('./components/App', render)
 }
-
-/*
-const Peer = require('peerjs')
-
-const peer = new Peer({
-  host: 'localhost',
-  port: 9000,
-  path: '/peerjs',
-  // Set highest debug level (log everything!).
-  debug: 3,
-  // Set a logging function:
-  logFunction: function() {
-    var copy = Array.prototype.slice.call(arguments).join(' ');
-    console.log(copy)
-  }
-});
-
-const conn = peer.connect('')
-conn.on('open', () => conn.send('hi!'))
-*/

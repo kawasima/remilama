@@ -13,11 +13,11 @@ function ChannelContainer(props) {
 
 const connector = connect(
   ({ channel }) => channel,
-  (dispatch) => {
+  (dispatch, props) => {
     return {
       onCreateChannel: (values, form, cb) => {
+        props.history.push('/channel/' + values.channel_name)
         dispatch({type: 'ADD_CHANNEL', name: values.channel_name})
-        dispatch(push('/xxx/' + values.channel_name))
       }
     }
   }

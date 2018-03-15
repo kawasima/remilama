@@ -3,7 +3,7 @@
   "version": "0.1.0-SNAPSHOT",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --port=3355 --hot --mode development"
+    "start": "node app.js"
   },
   "author": "kawasima",
   "license": "MIT",
@@ -27,19 +27,20 @@
     "express": "^4.16.3",
     "final-form": "^4.2.1",
     "history": "^4.7.2",
+    "pdfjs-dist": "^2.0.428",
     "peer": "^0.2.8",
     "peerjs": "^0.3.14",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-final-form": "^3.1.2",
-    "react-handsontable": "^0.3.1",
     "react-redux": "^5.0.7",
-    "react-router": "^4.0.8",
-    "react-router-dom": "^4.0.8",
+    "react-router": "^4.2.0",
+    "react-router-dom": "^4.2.2",
     "react-router-redux": "^4.0.8",
     "redux": "^3.7.2",
     "redux-logger": "^3.0.6",
-    "redux-promise": "^0.5.3"
+    "redux-promise": "^0.5.3",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.40",

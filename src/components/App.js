@@ -7,7 +7,7 @@ import ReviewerContainer from '../containers/ReviewerContainer'
 import RevieweeContainer from '../containers/RevieweeContainer'
 import ReviewCreateFormContainer from '../containers/ReviewCreateFormContainer'
 
-import PdfDocument from '../components/PdfDocument'
+import PdfContainer from '../containers/PdfContainer'
 
 const App = () => {
   const routing = (
@@ -16,7 +16,7 @@ const App = () => {
       <Route path='/review/new' component={ReviewCreateFormContainer}/>
       <Route path='/review/:id/reviewer' component={ReviewerContainer}/>
       <Route path='/review/:id' component={RevieweeContainer}/>
-      <Route path='/pdf' component={PdfDocument}/>
+      <Route exact path='/pdf' component={PdfContainer}/>
     </Switch>)
 
   return (

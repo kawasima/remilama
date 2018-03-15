@@ -36,11 +36,14 @@ const calculateScale = (scale, fillWidth, fillHeight, view, parentElement) => {
 }
 
 class PdfDocument extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {}
+  static defaultProps = {
+    page: 1,
+    scale: 1.0,
+    fillWidth: false,
+    fillHeight: false
   }
 
+  state = {}
   static defaultBinaryToBase64(arrayBuffer) {
     let base64 = ''
     const encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
@@ -50,7 +53,7 @@ class PdfDocument extends React.Component {
     const mainLength = byteLength - byteRemainder
 
     let a, b, c, d, chunk
-
+f
     for (let i = 0; i < mainLength; i += 3) {
       chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2]
 
@@ -83,6 +86,7 @@ class PdfDocument extends React.Component {
   componentDidMount() {
     this.loadPDFDocument(this.props)
     this.renderPdf()
+
 
     window.addEventListener('resize', this.renderPdf)
     window.addEventListener('orientationchange', this.renderPdf)
@@ -134,7 +138,7 @@ class PdfDocument extends React.Component {
     window.removeEventListener('orientationchange', this.renderPdf)
   }
 
-  onGetPdfRaw(pdfRaw) {
+  onGetPdfRaw = pdfRaw => {
     const { onContentAvailable, onBinaryContentAvailable, binaryToBase64 } = this.props
     if (typeof onBinaryContentAvailable === 'function') {
       onBinaryContentAvailable(pdfRaw)
@@ -148,7 +152,7 @@ class PdfDocument extends React.Component {
     }
   }
 
-  onDocumentComplete(pdf) {
+  onDocumentComplete = pdf => {
     this.setState({ pdf })
     const { onDocumentComplete, onContentAvailable, onBinaryContentAvailable } = this.props
     if (typeof onDocumentComplete === 'function') {
@@ -160,7 +164,7 @@ class PdfDocument extends React.Component {
     pdf.getPage(this.props.page).then(this.onPageComplete)
   }
 
-  onDocumentError(err) {
+  onDocumentError = err => {
     if (err.isCanceled && err.pdf) {
       err.pdf.destroy()
     }
@@ -169,7 +173,7 @@ class PdfDocument extends React.Component {
     }
   }
 
-  onPageComplete(page) {
+  onPageComplete = page => {
     this.setState({ page })
     this.renderPdf()
     const { onPageComplete } = this.props
@@ -178,7 +182,7 @@ class PdfDocument extends React.Component {
     }
   }
 
-  getDocument(val) {
+  getDocument = val => {
     if (this.documentPromise) {
       this.documentPromise.cancel()
     }
@@ -192,17 +196,15 @@ class PdfDocument extends React.Component {
   }
 
 
-  loadByteArray(byteArray) {
-    this.getDocument(byteArray)
-  }
+  loadByteArray = byteArray => this.getDocument(byteArray)
 
-  loadPDFDocument(props) {
+  loadPDFDocument = props => {
     if (props.file) {
       if (typeof props.file === 'string') {
         return this.getDocument(props.file)
       }
 
-      const reader = FileReader()
+      const reader = new FileReader()
       reader.onloadend = () =>
         this.loadByteArray(new Uint8Array(reader.result))
       reader.readAsArrayBuffer(props.file)
@@ -254,55 +256,94 @@ class PdfDocument extends React.Component {
       const dpiScale = window.devicePixelRatio || 1
       const scale = calculateScale(pScale, fillWidth, fillHeight, page.view, parentElement)
       const adjustedScale = scale * dpiScale
-      const viewport = page.getViewport(adjustedScale, roatate)
+      const viewport = page.getViewport(adjustedScale, rotate)
       canvas.style.width = `${viewport.width / dpiScale}px`
       canvas.style.height = `${viewport.height / dpiScale}px`
       canvas.height = viewport.height
       canvas.width = viewport.width
+      canvas.addEventListener('click', (e) => this.props.onPageClick(e.clientX, e.clientY, this.props.page))
       page.render({ canvasContext, viewport })
     }
   }
 
+  renderPagination = (page, pages, onPrevious, onNext) => {
+    let previousButton = (<li className="previous" onClick={e => onPrevious(page)}><a href="javascript:void(0)">Previous</a></li>)
+    if (page === 1) {
+      previousButton = <li className="previous disabled"><a href="javascript:void(0)">Previous</a></li>
+    }
+
+    let nextButton = (<li className="next" onClick={e => onNext(page)}><a href="javascript:void(0)">Next</a></li>)
+    if (page === pages) {
+      nextButton = <li className="next disabled"><a href="javascript:void(0)">Next</a></li>
+    }
+
+    return (
+      <nav>
+        <ul className="pager">
+          {previousButton}
+          {nextButton}
+        </ul>
+      </nav>
+    )
+  }
+
   render() {
-    const { loading } = this.props
+    const { loading, onNext, onPrevious, onRenderedCanvas } = this.props
     const { page } = this.state
+    let pagination = null
+    if (page) {
+      pagination = this.renderPagination(
+        this.props.page,
+        this.state.pdf.numPages,
+        onPrevious,
+        onNext
+      )
+    }
     return page ?
-      <div ref={(pasrentDiv) => { this.canvasParent = parentDiv }} />
+      (
+        <div>
+          {pagination}
+          <div ref={(parentDiv) => {
+              if (parentDiv) {
+                this.canvasParent = parentDiv
+                if (onRenderedCanvas)
+                  onRenderedCanvas(parentDiv.offsetTop, parentDiv.offsetLeft)
+              }
+            }}/>
+        </div>
+      )
       :
       loading || <div>Loading PDF...</div>
   }
 }
 
 PdfDocument.propTypes = {
-    content: PropTypes.string,
-    documentInitParameters: PropTypes.shape({
-      url: PropTypes.string
-    }),
-    binaryContent: PropTypes.shape({
-      data: PropTypes.any
-    }),
-    file: PropTypes.any,
-    loading: PropTypes.any,
-    page: PropTypes.number,
-    scale: PropTypes.number,
-    fillWidth: PropTypes.bool,
-    fillHeight: PropTypes.bool,
-    rotate: PropTypes.number,
-    onContentAvailable: PropTypes.func,
-    onBinaryContentAvailable: PropTypes.func,
-    binaryToBase64: PropTypes.func,
-    onDocumentComplete: PropTypes.func,
-    onDocumentError: PropTypes.func,
-    onPageComplete: PropTypes.func,
-    className: PropTypes.string,
-    style: PropTypes.object
-}
-
-PdfDocument.defaultProps = {
-  page: 1,
-  scale: 1.0,
-  fillWidth: false,
-  fillHeight: false
+  content: PropTypes.string,
+  documentInitParameters: PropTypes.shape({
+    url: PropTypes.string
+  }),
+  binaryContent: PropTypes.shape({
+    data: PropTypes.any
+  }),
+  file: PropTypes.any,
+  loading: PropTypes.any,
+  page: PropTypes.number,
+  scale: PropTypes.number,
+  fillWidth: PropTypes.bool,
+  fillHeight: PropTypes.bool,
+  rotate: PropTypes.number,
+  onContentAvailable: PropTypes.func,
+  onBinaryContentAvailable: PropTypes.func,
+  binaryToBase64: PropTypes.func,
+  onDocumentComplete: PropTypes.func,
+  onDocumentError: PropTypes.func,
+  onPageClick: PropTypes.func,
+  onPageComplete: PropTypes.func,
+  className: PropTypes.string,
+  style: PropTypes.object,
+  onNext: PropTypes.func,
+  onPrevious: PropTypes.func,
+  onRenderedCanvas: PropTypes.func
 }
 
 export default PdfDocument

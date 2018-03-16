@@ -45,24 +45,24 @@ class ReviewerContainer extends React.Component {
     this.setState({ dataConnection: conn })
   }
 
-  componentDidUpdate() {
-    const { reviewer, pdf } = this.props
-    const { dataConnection } = this.state
-    dataConnection.send({
-      type: 'UPDATE_REVIEWER',
-      reviewer: {
-        id: reviewer.id,
-        action: `Show the ${pdf.page} page on ${reviewer.file.name}`
-      }
-    })
-  }
-
   render() {
     const { review, reviewer, pdf } = this.props
     const { dataConnection } = this.state
     const documentView = (reviewer.file) ? (
       <PdfContainer {...pdf}
-                    binaryContent={reviewer.file.blob}/>
+                    binaryContent={reviewer.file.blob}
+                    onPageComplete={page => {
+                      dataConnection.send({
+                        type: 'UPDATE_REVIEWER',
+                        reviewer: {
+                          id: reviewer.id,
+                          action: `Show the ${pdf.page} page on ${reviewer.file.name}`
+                        }
+                      })
+                    }
+        }
+        on
+        />
     ) : null
     return (
       <div>

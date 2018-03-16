@@ -28,7 +28,7 @@ export default (state = initialState, action) => {
         files: state.files.filter(f => f.name !== action.filename)
       })
   case 'ADD_REVIEWER':
-    if (!(state.reviewes || []).find(reviewer => reviewer.id === action.id)) {
+    if (!state.reviewers.find(reviewer => reviewer.id === action.id)) {
       return Object.assign(
         {},
         state,

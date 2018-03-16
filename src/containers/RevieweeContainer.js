@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import Peer from 'peerjs'
 import uuidv4 from 'uuid/v4'
 import Review from '../components/Review'
+import Reviewer from '../components/Reviewer'
 import ReviewStatus from '../components/ReviewStatus'
-import SelectReviewFile from '../components/SelectReviewFile'
 
 class RevieweeContainer extends Component {
   constructor(props) {
@@ -14,31 +14,43 @@ class RevieweeContainer extends Component {
 
   createPeer(props) {
     this.peer = new Peer(props.id, {
-      host: 'localhost',
+      host: '/',
       port: 9000,
       path: '/peerjs',
       debug: 3,
     })
 
     this.peer.on('connection', function(conn) {
-      conn.on('open', () => {
+      conn.on('open', (id) => {
+        console.log(`Connect peer=${id}`)
         conn.send({
           type: 'REVIEW_INFO',
-          name: props.name,
-          files: props.files.map(f => f.name)
+          review: {
+            id: props.id,
+            name: props.name,
+            files: props.files.map(f => { return {name: f.name} })
+          }
         })
       })
       conn.on('data', function(message){
         switch(message.type) {
+        case 'REVIEWER':
+          props.onAddReviewer(message.reviewer)
+          break
         case 'FILE_REQUEST':
           const file = props.files.find(f => f.name === message.filename)
           const reader = new FileReader()
           reader.onload = () => conn.send({
             type: 'FILE_RESPONSE',
-            name: file.name,
-            blob: reader.result
+            file: {
+              name: file.name,
+              blob: reader.result
+            }
           })
           reader.readAsArrayBuffer(file)
+          break
+        case 'UPDATE_REVIEWER':
+          props.onUpdateReviewer(message.reviewer)
         }
       });
     });
@@ -46,14 +58,20 @@ class RevieweeContainer extends Component {
 
   render() {
     const props = this.props
-    if (props.isStarted && !this.peer) {
+    if (!this.peer) {
       this.createPeer(props)
     }
     return (
       <div>
+        <h2 className="ui header">
+          <i className="plug icon"></i>
+          <div className="content">
+            Review
+          </div>
+        </h2>
         <Review {...props} />
-        <SelectReviewFile {...props} />
-        <ReviewStatus {...props} />
+
+        { props.reviewers.map( reviewer => <Reviewer reviewer={reviewer} /> ) }
       </div>
     )
   }
@@ -63,10 +81,16 @@ const connector = connect(
   ({ review }) => review,
   (dispatch, props) => {
     return {
-      onSelectFile: file => {
+      onAddReviewer: (reviewer) => {
         dispatch({
-          type: 'ADD_REVIEW_FILE',
-          file: file
+          ...reviewer,
+          type: 'ADD_REVIEWER'
+        })
+      },
+      onUpdateReviewer: reviewer => {
+        dispatch({
+          type: 'UPDATE_REVIEWER',
+          reviewer: reviewer
         })
       },
       onChangeReviewStatus: () => {

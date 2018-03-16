@@ -1,6 +1,7 @@
-import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
 import React from 'react'
+import { withRouter } from 'react-router-dom'
+import { connect } from 'react-redux'
+import uuidv4 from 'uuid/v4'
 import Home from '../components/Home'
 
 function HomeContainer(props) {
@@ -17,7 +18,11 @@ const connector = connect(
         props.history.push('/review/' + values.review_id + '/reviewer')
         dispatch({
           type: 'JOIN_REVIEW',
-          id: values.review_id
+          reviewId: values.review_id,
+          reviewer: {
+            id: uuidv4(),
+            name: values.reviewer_name
+          }
         })
       }
     }

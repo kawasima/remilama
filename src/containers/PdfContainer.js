@@ -12,12 +12,14 @@ function PdfContainer(props) {
         .map(comment => {
           return (
             <ReviewComment {...comment}
+                           onMoveComment = {props.onMoveComment}
                            onPostComment = {props.onPostComment}
+                           onDeleteComment = {props.onDeleteComment}
                            offsetTop={props.offsetTop}
                            offsetLeft={props.offsetLeft} />
           )
         })
-  return props.file ?
+  return (props.file || props.binaryContent) ?
     (
       <div>
         <PdfDocument {...props}/>
@@ -54,7 +56,7 @@ const connector = connect(
         dispatch({
           type: 'ADD_COMMENT',
           id: uuidv4(),
-          x: x - (props.offsetLeft || 0),
+          x: x,
           y: y - (props.offsetTop || 0),
           page: page
         })
@@ -72,7 +74,25 @@ const connector = connect(
         dispatch({
           type: 'UPDATE_COMMENT',
           id: id,
-          description: description
+          changes: {
+            description: description
+          }
+        })
+      },
+      onMoveComment: ({id, x, y}) => {
+        dispatch({
+          type: 'UPDATE_COMMENT',
+          id: id,
+          changes: {
+            x: x,
+            y: y
+          }
+        })
+      },
+      onDeleteComment: (id) => {
+        dispatch({
+          type: 'REMOVE_COMMENT',
+          id: id
         })
       }
     }

@@ -267,23 +267,22 @@ f
   }
 
   renderPagination = (page, pages, onPrevious, onNext) => {
-    let previousButton = (<li className="previous" onClick={e => onPrevious(page)}><a href="javascript:void(0)">Previous</a></li>)
+    let previousButton = (<div className="item" onClick={e => onPrevious(page)}><i className="chevron left icon"></i></div>)
     if (page === 1) {
-      previousButton = <li className="previous disabled"><a href="javascript:void(0)">Previous</a></li>
+      previousButton = <div className="item disabled"><i className="chevron left icon"></i></div>
     }
 
-    let nextButton = (<li className="next" onClick={e => onNext(page)}><a href="javascript:void(0)">Next</a></li>)
+    let nextButton = (<div className="item" onClick={e => onNext(page)}><i className="chevron right icon"></i></div>)
     if (page === pages) {
-      nextButton = <li className="next disabled"><a href="javascript:void(0)">Next</a></li>
+      nextButton = <div className="item disabled"><i className="chevron right icon"></i></div>
     }
 
     return (
-      <nav>
-        <ul className="pager">
-          {previousButton}
-          {nextButton}
-        </ul>
-      </nav>
+      <div className="ui pagination menu">
+        {previousButton}
+        <div className="item">{page} / {pages}</div>
+        {nextButton}
+      </div>
     )
   }
 

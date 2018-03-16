@@ -1,6 +1,6 @@
 import React from 'react'
 
 export default ({onSelectFile}) =>
-  <input type="file" onChange={
+  <input type="file" value="" onChange={
     e => onSelectFile(e.target.files.item(0))
   }/>

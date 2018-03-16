@@ -36,9 +36,16 @@ export default (state = initialState, action) => {
       {
         comments: state.comments
           .map(comment => comment.id === action.id ?
-               { ...comment, description: action.description }
+               { ...comment, ...action.changes }
                :
                comment)
+      })
+  case 'REMOVE_COMMENT':
+    return Object.assign(
+      {},
+      state,
+      {
+        comments: state.comments.filter(comment => comment.id !== action.id)
       })
   default:
     return state

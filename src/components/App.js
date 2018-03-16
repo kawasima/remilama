@@ -1,5 +1,8 @@
 import React, { Component } from 'react'
-import { BrowserRouter as Router, Route, Switch, Link, withRouter } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
+import HTML5Backend from 'react-dnd-html5-backend'
+import { DragDropContext } from 'react-dnd'
+
 import { history } from '../store'
 import Layout from './Layout'
 import HomeContainer from '../containers/HomeContainer'
@@ -26,4 +29,4 @@ const App = () => {
   )
 }
 
-export default App
+export default DragDropContext(HTML5Backend)(App)

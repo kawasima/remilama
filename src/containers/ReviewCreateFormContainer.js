@@ -6,7 +6,15 @@ import uuidv4 from 'uuid/v4'
 
 function ReviewCreateFormContainer(props) {
   return (
-    <ReviewCreateForm {...props} />
+    <div>
+      <h2 className="ui header">
+        <i className="plug icon"></i>
+        <div className="content">
+          Create a New Review
+        </div>
+      </h2>
+      <ReviewCreateForm {...props} />
+    </div>
   )
 }
 
@@ -18,10 +26,28 @@ const connector = connect(
         const id = uuidv4()
         dispatch({
           type: 'CREATE_REVIEW',
-          id: id,
-          name: values.review_name
+          review: {
+            id: id,
+            name: values.review_name
+          }
         })
         props.history.push('/review/' + id)
+      },
+      onSelectFile: file => {
+        if (file) {
+          dispatch({
+            type: 'ADD_REVIEW_FILE',
+            file: file
+          })
+        }
+      },
+      onRemoveFile: filename => {
+        if (filename) {
+          dispatch({
+            type: 'REMOVE_REVIEW_FILE',
+            filename: filename
+          })
+        }
       }
     }
   }

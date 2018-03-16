@@ -2,6 +2,7 @@ const initialState = {
   id: null,
   name: null,
   files: [],
+  reviewers: [],
   isStarted: false
 }
 
@@ -11,11 +12,7 @@ export default (state = initialState, action) => {
     return Object.assign(
       {},
       state,
-      {
-        id: action.id,
-        name: action.name,
-        files: action.files || []
-      })
+      { ...action.review })
   case 'ADD_REVIEW_FILE':
     return Object.assign(
       {},
@@ -23,13 +20,41 @@ export default (state = initialState, action) => {
       {
         files: [ ...state.files, action.file ]
       })
-  case 'JOIN_REVIEW':
+  case 'REMOVE_REVIEW_FILE':
     return Object.assign(
       {},
-      initialState,
+      state,
       {
-        id: action.id
+        files: state.files.filter(f => f.name !== action.filename)
       })
+  case 'ADD_REVIEWER':
+    if (!(state.reviewes || []).find(reviewer => reviewer.id === action.id)) {
+      return Object.assign(
+        {},
+        state,
+        {
+          reviewers: [
+            ...state.reviewers,
+            {
+              id: action.id,
+              name: action.name
+            }
+          ]
+        })
+    } else {
+      return state
+    }
+  case 'UPDATE_REVIEWER':
+    return {
+      ...state,
+      reviewers: state.reviewers.map(reviewer => {
+        if (reviewer.id === action.reviewer.id) {
+          return { ...reviewer, ...action.reviewer }
+        } else {
+          return reviewer
+        }
+      })
+    }
   case 'START_REVIEW':
     return { ...state, isStarted: true }
   case 'END_REVIEW':

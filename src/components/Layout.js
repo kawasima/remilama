@@ -4,11 +4,17 @@ import { NavLink } from 'react-router-dom'
 
 export default function Layout(props) {
   return (
-    <div className="ui container Layout">
-      <div className="ui menu">
-        <NavLink to="/" className="item">Home</NavLink>
+    <div>
+      <div className="ui fixed menu">
+        <div className="ui container">
+          <div className="item">Remilama</div>
+          <NavLink to="/" className="item">Home</NavLink>
+        </div>
       </div>
-      {props.children}
+      <div className="ui main container Layout"
+           style={{marginTop: '7em'}}>
+        {props.children}
+      </div>
     </div>
   )
 }

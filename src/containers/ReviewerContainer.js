@@ -26,6 +26,11 @@ class ReviewerContainer extends React.Component {
       // Set highest debug level (log everything!).
       debug: 3,
     })
+    peer.on('error', err => {
+      console.error(err.type)
+    })
+
+
 
     const conn = peer.connect(props.reviewer.reviewId)
     conn.on('data', message => {
@@ -41,39 +46,50 @@ class ReviewerContainer extends React.Component {
         props.onReceiveFile(message.file)
       }
     })
+    this.setState({
+      dataConnection: conn,
+      peer: peer
+    })
+  }
 
-    this.setState({ dataConnection: conn })
+  componentWillUnmount() {
+    this.state.peer.disconnect()
+    this.state.peer.destroy()
+  }
+
+  onPageComplete = page => {
+    const { reviewer, pdf }  = this.props
+    const { dataConnection } = this.state
+
+    dataConnection.send({
+      type: 'UPDATE_REVIEWER',
+      reviewer: {
+        id: reviewer.id,
+        action: `Show the ${pdf.page} page on ${reviewer.file.name}`
+      }
+    })
+  }
+
+  onSelectFile = filename => {
+    const { dataConnection } = this.state
+    dataConnection.send({
+      type: 'FILE_REQUEST',
+      filename: filename
+    })
   }
 
   render() {
     const { review, reviewer, pdf } = this.props
-    const { dataConnection } = this.state
     const documentView = (reviewer.file) ? (
       <PdfContainer {...pdf}
                     binaryContent={reviewer.file.blob}
-                    onPageComplete={page => {
-                      dataConnection.send({
-                        type: 'UPDATE_REVIEWER',
-                        reviewer: {
-                          id: reviewer.id,
-                          action: `Show the ${pdf.page} page on ${reviewer.file.name}`
-                        }
-                      })
-                    }
-        }
-        on
+                    onPageComplete={this.onPageComplete}
         />
     ) : null
     return (
       <div>
         <Review {...review}
-                onSelectFile={(filename => {
-                  dataConnection.send({
-                    type: 'FILE_REQUEST',
-                    filename: filename
-                  })
-                })
-          }/>
+                onSelectFile={this.onSelectFile}/>
           {documentView}
       </div>
     )

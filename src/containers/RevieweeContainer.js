@@ -56,11 +56,20 @@ class RevieweeContainer extends Component {
     });
   }
 
+  componentDidMount() {
+    if (!this.peer) {
+      this.createPeer(this.props)
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.peer) {
+      this.peer.destroy()
+    }
+  }
+
   render() {
     const props = this.props
-    if (!this.peer) {
-      this.createPeer(props)
-    }
     return (
       <div>
         <h2 className="ui header">

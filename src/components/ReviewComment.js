@@ -6,14 +6,16 @@ import { Form, Field } from 'react-final-form'
 
 const reviewCommentSource = {
   beginDrag(props) {
-    return {}
+    return {
+      commentId: props.id
+    }
   },
-  endDrag({id, onMoveComment, offsetLeft, offsetTop}, monitor) {
-    const position = monitor.getClientOffset()
+  endDrag({id, onMoveComment, x, y}, monitor) {
+    const { delta } = monitor.getDifferenceFromInitialOffset()
     onMoveComment({
       id,
-      x: position.x,
-      y: position.y - offsetTop
+      x: x + delta.x,
+      y: y + delta.y
     })
   }
 }
@@ -86,14 +88,16 @@ class ReviewComment extends React.Component {
           <div>{description}</div>
 
     return connectDragSource(
-      <div className="ui segment visible"
+      <div className="ui segment"
            style={{
              position: 'absolute',
              minWidth: '300px',
              left: x,
              top: offsetTop + y,
              background: 'linear-gradient(to right, #ffffcccc 0%, #f1f1c1cc 0.5%, #f1f1c1cc 13%, #ffffcccc 16%)',
-             border: '1px solid #E8E8E8'
+             border: '1px solid #E8E8E8',
+             visibility: isDragging ? 'hidden' : 'visible'
+
            }}
            onClick={(e) => this.setState({editing: true})}>
         <div className="ui right floated mini button"

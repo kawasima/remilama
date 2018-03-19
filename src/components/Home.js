@@ -1,17 +1,25 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Form, Field } from 'react-final-form'
+import { required, composeValidators, mustBeUUID } from '../validators'
 
 const renderJoinForm = ({ handleSubmit, pristine, invalid }) => (
   <form className="ui form" onSubmit={handleSubmit}>
     <div className="fields">
-      <div className="field">
-        <label>Review ID</label>
-        <Field component="input" name="review_id" placeholder="Review ID" />
-      </div>
-      <div className="field">
+      <Field component="input" name="review_id"
+             validate={composeValidators(required, mustBeUUID)}>
+        {({ input, meta }) => (
+          <div className="required field">
+            <label>Review ID</label>
+            <input type="text" {...input} placeholder="Review ID" />
+            {meta.error && <span>{meta.error}</span>}
+          </div>
+        )}
+      </Field>
+      <div className="required field">
         <label>Reviewer Name</label>
-        <Field component="input" name="reviewer_name" placeholder="Your name"/>
+        <Field component="input" name="reviewer_name" placeholder="Your name"
+               validate={required}/>
       </div>
       <div className="field">
         <label>&nbsp;</label>
@@ -32,16 +40,21 @@ export default ({onJoinReview}) => (
       </div>
     </h2>
 
-    <div className="ui relaxed divided list">
-      <div className="item">
-        <div className="content">
-          <Link className="header" to="/review/new">Reviewer</Link>
-          <div className="description">Create a review</div>
+    <div className="ui grid container">
+      <div className="eight wide column">
+        <div className="ui raised segment">
+          <div className="ui header">Reviewer</div>
+          <div className="description">
+            Create a review
+            <div>
+              <Link className="ui primary button" to="/review/new">Create</Link>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="item">
-        <div className="content">
-          <div className="header">Reviewee</div>
+      <div className="eight wide column">
+        <div className="ui raised segment">
+          <div className="ui header">Reviewee</div>
           <div className="description">
             <Form
               onSubmit={onJoinReview}

@@ -261,55 +261,31 @@ f
       canvas.style.height = `${viewport.height / dpiScale}px`
       canvas.height = viewport.height
       canvas.width = viewport.width
-      canvas.addEventListener('click', (e) => this.props.onPageClick(e.clientX, e.clientY, this.props.page))
+      canvas.addEventListener('click', (e) => {
+        const rect = e.target.getBoundingClientRect()
+        this.props.onPageClick(
+          e.clientX - rect.left,
+          e.clientY - rect.top,
+          this.props.page,
+          this.props.scale)})
       page.render({ canvasContext, viewport })
     }
   }
 
-  renderPagination = (page, pages, onPrevious, onNext) => {
-    let previousButton = (<div className="item" onClick={e => onPrevious(page)}><i className="chevron left icon"></i></div>)
-    if (page === 1) {
-      previousButton = <div className="item disabled"><i className="chevron left icon"></i></div>
-    }
-
-    let nextButton = (<div className="item" onClick={e => onNext(page)}><i className="chevron right icon"></i></div>)
-    if (page === pages) {
-      nextButton = <div className="item disabled"><i className="chevron right icon"></i></div>
-    }
-
-    return (
-      <div className="ui pagination menu">
-        {previousButton}
-        <div className="item">{page} / {pages}</div>
-        {nextButton}
-      </div>
-    )
-  }
-
   render() {
-    const { loading, onNext, onPrevious, onRenderedCanvas } = this.props
+    const {
+      loading,
+      onRenderedCanvas
+    } = this.props
     const { page } = this.state
-    let pagination = null
-    if (page) {
-      pagination = this.renderPagination(
-        this.props.page,
-        this.state.pdf.numPages,
-        onPrevious,
-        onNext
-      )
-    }
+
     return page ?
       (
-        <div>
-          {pagination}
-          <div ref={(parentDiv) => {
-              if (parentDiv) {
-                this.canvasParent = parentDiv
-                if (onRenderedCanvas)
-                  onRenderedCanvas(parentDiv.offsetTop, parentDiv.offsetLeft)
-              }
-            }}/>
-        </div>
+        <div ref={(parentDiv) => {
+            if (parentDiv) {
+              this.canvasParent = parentDiv
+            }
+          }}/>
       )
       :
       loading || <div>Loading PDF...</div>
@@ -340,8 +316,6 @@ PdfDocument.propTypes = {
   onPageComplete: PropTypes.func,
   className: PropTypes.string,
   style: PropTypes.object,
-  onNext: PropTypes.func,
-  onPrevious: PropTypes.func,
   onRenderedCanvas: PropTypes.func
 }
 

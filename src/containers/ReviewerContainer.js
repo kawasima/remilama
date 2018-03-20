@@ -30,8 +30,6 @@ class ReviewerContainer extends React.Component {
       console.error(err.type)
     })
 
-
-
     const conn = peer.connect(props.reviewer.reviewId)
     conn.on('data', message => {
       switch(message.type) {

@@ -10,12 +10,12 @@ const reviewCommentSource = {
       commentId: props.id
     }
   },
-  endDrag({id, onMoveComment, x, y}, monitor) {
-    const { delta } = monitor.getDifferenceFromInitialOffset()
+  endDrag({id, onMoveComment, x, y, scale}, monitor) {
+    const delta = monitor.getDifferenceFromInitialOffset()
     onMoveComment({
       id,
-      x: x + delta.x,
-      y: y + delta.y
+      x: (x * scale + delta.x) / scale,
+      y: (y * scale + delta.y) / scale
     })
   }
 }
@@ -34,8 +34,7 @@ class ReviewComment extends React.Component {
     y: PropTypes.number,
     file: PropTypes.string,
     page: PropTypes.number,
-    offsetTop: PropTypes.number,
-    offsetLeft: PropTypes.number,
+    scale: PropTypes.number,
     description: PropTypes.string,
     onPostComment: PropTypes.func.isRequired,
     onMoveComment: PropTypes.func.isRequired,
@@ -57,31 +56,37 @@ class ReviewComment extends React.Component {
           this.setState({ editing: false })
           onPostComment(id, values.description)
         }}
-        render={({ handleSubmit, prinstine, invalid }) => (
-          <form onSubmit={handleSubmit}>
-            <Field
-              name='description'
-              value={description}
-              render={({ input, meta }) => (
-                <textarea {...input} onKeyPress={ (e) => {
-                    if (e.key === 'Enter') {
-                      handleSubmit(e)
-                    }
-                  }} />
-              )}
-            />
-          </form>
-        )}
+        initialValues={{ description }}
+        render={({ handleSubmit, prinstine, invalid }) => {
+          const onKeyPress = (e) => {
+            if (e.key === 'Enter') {
+              handleSubmit(e)
+            }
+          }
+          const handlePropagationStop = (e) => e.stopPropagation()
+          const textarea = ({ input, meta }) => (
+                  <textarea {...input}
+                            onKeyPress={onKeyPress}
+                            onClick={handlePropagationStop}/>
+          )
+          return (
+            <form onSubmit={handleSubmit}>
+              <Field name="description" render={textarea} />
+            </form>
+          )
+        }}
       />
     )
   }
 
   render() {
     const {
-      id, x, y, description, offsetTop, offsetLeft, onDeleteComment,
+      id, x, y, scale, description,
+      onDeleteComment,
       isDragging,
       connectDragSource
     } = this.props
+
     const content = this.state.editing ?
           this.renderForm()
           :
@@ -90,10 +95,11 @@ class ReviewComment extends React.Component {
     return connectDragSource(
       <div className="ui segment"
            style={{
-             position: 'absolute',
+          position: 'absolute',
+          margin: 0,
              minWidth: '300px',
-             left: x,
-             top: offsetTop + y,
+             left: x * scale,
+             top: y * scale,
              background: 'linear-gradient(to right, #ffffcccc 0%, #f1f1c1cc 0.5%, #f1f1c1cc 13%, #ffffcccc 16%)',
              border: '1px solid #E8E8E8',
              visibility: isDragging ? 'hidden' : 'visible'

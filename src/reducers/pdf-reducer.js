@@ -1,15 +1,20 @@
 const initialState = {
   page: 1,
+  scale: 1,
   comments: []
 }
 
 export default (state = initialState, action) => {
   switch (action.type) {
-  case 'SHOW_PDF':
+  case 'PDF/SHOW':
     return {...state, file: action.file }
-  case 'GO_PAGE':
+  case 'PDF/GO_PAGE':
     return {...state, page: action.page }
-  case 'ADD_COMMENT':
+  case 'PDF/SET_SCALE':
+    return {...state, scale: action.scale }
+  case 'PDF/SET_NUM_PAGES':
+    return {...state, numPages: action.numPages }
+  case 'PDF/ADD_COMMENT':
     return Object.assign(
       {},
       state,
@@ -23,13 +28,7 @@ export default (state = initialState, action) => {
                      description: ''
                    }]
       })
-  case 'CANVAS_OFFSET':
-    return {
-      ...state,
-      offsetTop: action.offsetTop,
-      offsetLeft: action.offsetLeft
-    }
-  case 'UPDATE_COMMENT':
+  case 'PDF/UPDATE_COMMENT':
     return Object.assign(
       {},
       state,
@@ -40,7 +39,7 @@ export default (state = initialState, action) => {
                :
                comment)
       })
-  case 'REMOVE_COMMENT':
+  case 'PDF/REMOVE_COMMENT':
     return Object.assign(
       {},
       state,

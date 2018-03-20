@@ -5,6 +5,7 @@ import uuidv4 from 'uuid/v4'
 import PdfDocument from '../components/PdfDocument'
 import ReviewComment from '../components/ReviewComment'
 import SelectReviewFile from '../components/SelectReviewFile'
+import DocumentControls from '../components/DocumentControls'
 
 function PdfContainer(props) {
   const comments = props.comments
@@ -12,18 +13,20 @@ function PdfContainer(props) {
         .map(comment => {
           return (
             <ReviewComment {...comment}
+                           scale={props.scale}
                            onMoveComment = {props.onMoveComment}
                            onPostComment = {props.onPostComment}
-                           onDeleteComment = {props.onDeleteComment}
-                           offsetTop={props.offsetTop}
-                           offsetLeft={props.offsetLeft} />
+                           onDeleteComment = {props.onDeleteComment} />
           )
         })
   return (props.file || props.binaryContent) ?
     (
       <div>
-        <PdfDocument {...props}/>
-        {comments}
+        <DocumentControls {...props} />
+        <div style={{position: 'relative'}}>
+          <PdfDocument {...props}/>
+          {comments}
+        </div>
       </div>
     )
     :
@@ -34,45 +37,52 @@ const connector = connect(
   ({ pdf }) => pdf,
   (dispatch, props) => {
     return {
+      onDocumentComplete: numPages => dispatch({
+        type: 'PDF/SET_NUM_PAGES',
+        numPages: numPages
+      }),
       onSelectFile: file => {
         dispatch({
-          type: 'SHOW_PDF',
+          type: 'PDF/SHOW',
           file: file
         })
       },
       onNext: (page) => {
         dispatch({
-          type: 'GO_PAGE',
+          type: 'PDF/GO_PAGE',
           page: page + 1
         })
       },
       onPrevious: (page) => {
         dispatch({
-          type: 'GO_PAGE',
+          type: 'PDF/GO_PAGE',
           page: page - 1
         })
       },
-      onPageClick: (x, y, page) => {
+      onZoomIn: (scale) => {
         dispatch({
-          type: 'ADD_COMMENT',
+          type: 'PDF/SET_SCALE',
+          scale: scale * 1.2
+        })
+      },
+      onZoomOut: (scale) => {
+        dispatch({
+          type: 'PDF/SET_SCALE',
+          scale: scale / 1.2
+        })
+      },
+      onPageClick: (x, y, page, scale) => {
+        dispatch({
+          type: 'PDF/ADD_COMMENT',
           id: uuidv4(),
-          x: x,
-          y: y - (props.offsetTop || 0),
+          x: x / scale,
+          y: y / scale,
           page: page
         })
       },
-      onRenderedCanvas: (offsetTop, offsetLeft) => {
-        if (!props.offsetTop) {
-          dispatch({
-            type: 'CANVAS_OFFSET',
-            offsetTop: offsetTop,
-            offsetLeft: offsetLeft
-          })
-        }
-      },
       onPostComment: (id, description) => {
         dispatch({
-          type: 'UPDATE_COMMENT',
+          type: 'PDF/UPDATE_COMMENT',
           id: id,
           changes: {
             description: description
@@ -81,7 +91,7 @@ const connector = connect(
       },
       onMoveComment: ({id, x, y}) => {
         dispatch({
-          type: 'UPDATE_COMMENT',
+          type: 'PDF/UPDATE_COMMENT',
           id: id,
           changes: {
             x: x,
@@ -91,7 +101,7 @@ const connector = connect(
       },
       onDeleteComment: (id) => {
         dispatch({
-          type: 'REMOVE_COMMENT',
+          type: 'PDF/REMOVE_COMMENT',
           id: id
         })
       }

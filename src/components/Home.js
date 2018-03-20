@@ -3,24 +3,39 @@ import { Link } from 'react-router-dom'
 import { Form, Field } from 'react-final-form'
 import { required, composeValidators, mustBeUUID } from '../validators'
 
+const reviewIdField = ({ input, meta }) => (
+  <div className={'required field' + (meta.touched && meta.error && ' error')}>
+    <label>Review ID</label>
+    <input type="text" {...input} placeholder="Review ID" />
+    <span className={'ui basic red pointing prompt label transition'
+          + ((meta.touched && meta.error) ? ' visible' : ' hidden')}>
+      {meta.error}&nbsp;
+    </span>
+  </div>
+)
+
+const reviewerNameField = ({ input, meta }) => (
+  <div className={'required field' + (meta.touched && meta.error && ' error')}>
+    <label>Reviewer Name</label>
+    <input type="text" {...input} placeholder="Your name" />
+    <span className={'ui basic red pointing prompt label transition'
+          + ((meta.touched && meta.error) ? ' visible' : ' hidden')}>
+      {meta.error}&nbsp;
+    </span>
+  </div>
+)
+
 const renderJoinForm = ({ handleSubmit, pristine, invalid }) => (
   <form className="ui form" onSubmit={handleSubmit}>
     <div className="fields">
       <Field component="input" name="review_id"
              validate={composeValidators(required, mustBeUUID)}>
-        {({ input, meta }) => (
-          <div className="required field">
-            <label>Review ID</label>
-            <input type="text" {...input} placeholder="Review ID" />
-            {meta.error && <span>{meta.error}</span>}
-          </div>
-        )}
+        {reviewIdField}
       </Field>
-      <div className="required field">
-        <label>Reviewer Name</label>
-        <Field component="input" name="reviewer_name" placeholder="Your name"
-               validate={required}/>
-      </div>
+      <Field component="input" name="reviewer_name"
+             validate={required}>
+        {reviewerNameField}
+      </Field>
       <div className="field">
         <label>&nbsp;</label>
         <button type="submit"

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Peer from 'peerjs'
 import uuidv4 from 'uuid/v4'
+import PdfContainer from '../containers/PdfContainer'
 import Review from '../components/Review'
 import Reviewer from '../components/Reviewer'
 import ReviewStatus from '../components/ReviewStatus'
@@ -14,7 +15,7 @@ class RevieweeContainer extends Component {
   }
 
   createPeer(props) {
-    this.peer = new Peer(props.id, {
+    this.peer = new Peer(props.review.id, {
       host: '/',
       port: 9000,
       path: '/peerjs',
@@ -22,24 +23,31 @@ class RevieweeContainer extends Component {
     })
 
     this.peer.on('connection', conn => {
+      const { review } = this.props.review
       conn.on('open', (id) => {
         console.log(`Connect peer=${id}`)
         conn.send({
           type: 'REVIEW_INFO',
           review: {
-            id: props.id,
-            name: props.name,
-            files: props.files.map(f => { return {name: f.name} })
+            id: review.id,
+            name: review.name,
+            files: review.files.map(f => { return {name: f.name} })
           }
         })
       })
-      conn.on('data', function(message){
+      conn.on('data', message => {
+        const {
+          review,
+          onAddReviewer,
+          onUpdateReviewer,
+          onCommentAction
+        } = this.props
         switch(message.type) {
         case 'REVIEWER':
-          props.onAddReviewer(message.reviewer, conn)
+          onAddReviewer(message.reviewer, conn)
           break
         case 'FILE_REQUEST':
-          const file = props.files.find(f => f.name === message.filename)
+          const file = review.files.find(f => f.name === message.filename)
           const reader = new FileReader()
           reader.onload = () => conn.send({
             type: 'FILE_RESPONSE',
@@ -51,21 +59,20 @@ class RevieweeContainer extends Component {
           reader.readAsArrayBuffer(file)
           break
         case 'UPDATE_REVIEWER':
-          props.onUpdateReviewer(message.reviewer)
+          onUpdateReviewer(message.reviewer)
           break
         case 'REVIEW/ADD_COMMENT':
         case 'REVIEW/UPDATE_COMMENT':
         case 'REVIEW/MOVE_COMMENT':
         case 'REVIEW/REMOVE_COMMENT':
-          props.onCommentAction(message)
+          onCommentAction(message)
           break
         }
       })
 
       conn.on('close', () => {
-        const { reviewers, onRemoveReviewer } = this.props
-        reviewers.forEach(reviewer => {
-          console.log(reviewer.id+ ':' + reviewer.dataConnection + ':' + (reviewer.dataConnection === conn))
+        const { review, onRemoveReviewer } = this.props
+        review.reviewers.forEach(reviewer => {
           if (reviewer.dataConnection === conn) {
             onRemoveReviewer(reviewer.id)
           }
@@ -98,8 +105,34 @@ class RevieweeContainer extends Component {
     }
   }
 
+  onSelectFile = filename => {
+    const { review, dispatch } = this.props
+    const file = review.files.find(f => f.name === filename)
+    const reader = new FileReader()
+    reader.onload = () => dispatch({
+      type: 'REVIEWER/SHOW_FILE',
+      file: {
+        name: file.name,
+        blob: reader.result
+      }
+    })
+    reader.readAsArrayBuffer(file)
+  }
+
   render() {
     const props = this.props
+
+    const documentView = (props.reviewer.file) ? (
+      <PdfContainer {...props.pdf}
+                    review={props.review}
+                    filename={props.reviewer.file.name}
+                    binaryContent={props.reviewer.file.blob}
+                    onPageComplete={e => {}}
+                    />
+    )
+          :
+          null
+
     return (
       <div>
         <h2 className="ui header">
@@ -108,22 +141,27 @@ class RevieweeContainer extends Component {
             Review
           </div>
         </h2>
-        <Review {...props} />
+        <Review {...props.review}
+                onSelectFile={this.onSelectFile}/>
 
-        { props.reviewers.map( reviewer => <Reviewer reviewer={reviewer} /> ) }
+        { props.review.reviewers.map( reviewer => <Reviewer reviewer={reviewer} /> ) }
+      {documentView}
       </div>
     )
   }
 
   static propTypes = {
-    comments: PropTypes.array,
-    reviewers: PropTypes.array,
+    reviewer: PropTypes.object,
+    review: PropTypes.object,
+    pdf: PropTypes.object,
     onRemoveReviewer: PropTypes.func.isRequired
   }
 }
 
 const connector = connect(
-  ({ review }) => review,
+  ({ review, reviewer, pdf }) => {
+    return { review, reviewer, pdf }
+  },
   (dispatch, props) => {
     return {
       onAddReviewer: (reviewer, dataConnection) => {
@@ -152,7 +190,8 @@ const connector = connect(
       },
       onCommentAction: (action) => {
         dispatch(action)
-      }
+      },
+      dispatch
     }
   }
 )

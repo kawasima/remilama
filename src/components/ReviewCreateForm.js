@@ -1,5 +1,5 @@
 import React from 'react'
-import { Form, Field } from 'react-final-form'
+import { Form, FormSpy, Field } from 'react-final-form'
 import SelectReviewFile from './SelectReviewFile'
 import { required, composeValidators } from '../validators'
 
@@ -17,45 +17,50 @@ const reviewFile = ({file, onRemoveFile}) => {
   )
 }
 
-function validateForm(files) {
-  const errors = {}
-  if (files.length === 0) {
-    errors.files = 'Requires one or more files'
-  }
-  return errors
-}
-
+const reviewNameField = ({ input, meta }) => (
+  <div className={'required field' + ((meta.touched && meta.error) ? ' error' : '')}>
+    <label>Review name</label>
+    <input type="text" {...input} placeholder="Review name" />
+    <span className={'ui basic red pointing prompt label transition'
+          + ((meta.touched && meta.error) ? ' visible' : ' hidden')}>
+      {meta.error}
+    </span>
+  </div>
+)
 
 const renderForm = ({files, onSelectFile, onRemoveFile}) => {
   return ({ handleSubmit, pristine, invalid }) => (
     <form className="ui form" onSubmit={handleSubmit}>
       <span>{invalid}</span>
-      <div className="required field">
-        <label>Review name</label>
-        <Field component="input" name="review_name"
-               validate={required}/>
-      </div>
+      <Field component="input" name="review_name"
+             validate={required}>
+        {reviewNameField}
+      </Field>
 
       <div className="required field">
         <label>Review files</label>
         { files ? (<ul>{files.map(file => reviewFile({file, onRemoveFile}))}</ul>) : null }
-        <SelectReviewFile onSelectFile={onSelectFile} />
+      <SelectReviewFile onSelectFile={onSelectFile}/>
       </div>
 
       <button type="submit"
               className="ui primary button"
-              disabled={pristine || invalid}>Create</button>
-    </form>
+              disabled={pristine || invalid || files.length==0}>Create</button>
+      </form>
   )
 }
 
-export default ({files, onSelectFile, onCreateReview, onRemoveFile }) => {
-  return (
+class ReviewCreateForm extends React.Component {
+  render() {
+    const { files, onSelectFile, onCreateReview, onRemoveFile } = this.props
+    return (
     <div>
       <Form
         onSubmit={onCreateReview}
-        render={renderForm({files, onSelectFile, onRemoveFile})}
-        validate={values => validateForm(files)}/>
+        render={renderForm({files, onSelectFile, onRemoveFile})}/>
     </div>
-  )
+    )
+  }
 }
+
+export default ReviewCreateForm

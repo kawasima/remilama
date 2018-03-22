@@ -1,7 +1,6 @@
 const initialState = {
   page: 1,
-  scale: 1,
-  comments: []
+  scale: 1
 }
 
 export default (state = initialState, action) => {
@@ -14,38 +13,6 @@ export default (state = initialState, action) => {
     return {...state, scale: action.scale }
   case 'PDF/SET_NUM_PAGES':
     return {...state, numPages: action.numPages }
-  case 'PDF/ADD_COMMENT':
-    return Object.assign(
-      {},
-      state,
-      {
-        comments: [...state.comments,
-                   {
-                     id: action.id,
-                     page: action.page,
-                     x: action.x,
-                     y: action.y,
-                     description: ''
-                   }]
-      })
-  case 'PDF/UPDATE_COMMENT':
-    return Object.assign(
-      {},
-      state,
-      {
-        comments: state.comments
-          .map(comment => comment.id === action.id ?
-               { ...comment, ...action.changes }
-               :
-               comment)
-      })
-  case 'PDF/REMOVE_COMMENT':
-    return Object.assign(
-      {},
-      state,
-      {
-        comments: state.comments.filter(comment => comment.id !== action.id)
-      })
   default:
     return state
   }

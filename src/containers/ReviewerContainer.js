@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
+import uuidv4 from 'uuid/v4'
 import Review from '../components/Review'
 import SelectReviewFile from '../components/SelectReviewFile'
 import PdfContainer from '../containers/PdfContainer'
@@ -36,30 +37,35 @@ class ReviewerContainer extends React.Component {
       case 'REVIEW_INFO':
         conn.send({
           type: 'REVIEWER',
-          reviewer: props.reviewer
+          reviewer: {
+            id: props.reviewer.id,
+            name: props.reviewer.name
+          }
         })
         props.onConnectReview(message.review)
         break
       case 'FILE_RESPONSE':
         props.onReceiveFile(message.file)
+        break
+      case 'REVIEW/UPDATE_COMMENTS':
+        console.log(message)
+        props.onUpdateComments(message.comments)
+        break
       }
     })
-    this.setState({
-      dataConnection: conn,
-      peer: peer
-    })
+    props.onCreatePeer(peer, conn)
   }
 
   componentWillUnmount() {
-    this.state.peer.disconnect()
-    this.state.peer.destroy()
+    const { reviewer } = this.props
+    reviewer.peer.disconnect()
+    reviewer.peer.destroy()
   }
 
   onPageComplete = page => {
     const { reviewer, pdf }  = this.props
-    const { dataConnection } = this.state
 
-    dataConnection.send({
+    reviewer.dataConnection.send({
       type: 'UPDATE_REVIEWER',
       reviewer: {
         id: reviewer.id,
@@ -69,10 +75,61 @@ class ReviewerContainer extends React.Component {
   }
 
   onSelectFile = filename => {
-    const { dataConnection } = this.state
+    const { dataConnection } = this.props.reviewer
     dataConnection.send({
       type: 'FILE_REQUEST',
       filename: filename
+    })
+  }
+
+  onPostComment = (filename, page, x, y, scale) => {
+    const { reviewer } = this.props
+
+    reviewer.dataConnection.send({
+      type: 'REVIEW/ADD_COMMENT',
+      id: uuidv4(),
+      postedBy: {
+        id: reviewer.id,
+        name: reviewer.name
+      },
+      x: x / scale,
+      y: y / scale,
+      page: page,
+      filename: filename
+    })
+  }
+
+  onUpdateComment = (id, description) => {
+    const { dataConnection } = this.props.reviewer
+
+    dataConnection.send({
+      type: 'REVIEW/UPDATE_COMMENT',
+      id: id,
+      changes: {
+        description: description
+      }
+    })
+  }
+
+  onMoveComment = ({id, x, y}) => {
+    const { dataConnection } = this.props.reviewer
+
+    dataConnection.send({
+      type: 'REVIEW/UPDATE_COMMENT',
+      id: id,
+      changes: {
+        x: x,
+        y: y
+      }
+    })
+  }
+
+  onDeleteComment = (id) => {
+    const { dataConnection } = this.props.reviewer
+
+    dataConnection.send({
+      type: 'REVIEW/REMOVE_COMMENT',
+      id: id
     })
   }
 
@@ -80,8 +137,17 @@ class ReviewerContainer extends React.Component {
     const { review, reviewer, pdf } = this.props
     const documentView = (reviewer.file) ? (
       <PdfContainer {...pdf}
+                    review={{
+                      ...review,
+                      onMoveComment: this.onMoveComment,
+                      onUpdateComment: this.onUpdateComment,
+                      onDeleteComment: this.onDeleteComment,
+                    }}
+                    reviewer={reviewer}
+                    filename={reviewer.file.name}
                     binaryContent={reviewer.file.blob}
                     onPageComplete={this.onPageComplete}
+                    onPageClick={this.onPostComment}
         />
     ) : null
     return (
@@ -102,8 +168,15 @@ const connector = connect(
       pdf
     }
   },
-  (dispatch, { review }) => {
+  (dispatch) => {
     return {
+      onCreatePeer: (peer, dataConnection) => {
+        dispatch({
+          type: 'REVIEWER/CREATE_PEER',
+          peer: peer,
+          dataConnection: dataConnection
+        })
+      },
       onConnectReview: (review) => {
         dispatch({
           type: 'CREATE_REVIEW',
@@ -115,8 +188,14 @@ const connector = connect(
           type: 'REVIEWER/SHOW_FILE',
           file: file
         })
+      },
+      onUpdateComments: comments => {
+        dispatch({
+          type: 'REVIEW/UPDATE_COMMENTS',
+          comments
+        })
       }
     }
   }
 )
-export default withRouter(connector(ReviewerContainer))
+export default connector(ReviewerContainer)

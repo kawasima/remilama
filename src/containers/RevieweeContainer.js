@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Peer from 'peerjs'
 import uuidv4 from 'uuid/v4'
@@ -20,7 +21,7 @@ class RevieweeContainer extends Component {
       debug: 3,
     })
 
-    this.peer.on('connection', function(conn) {
+    this.peer.on('connection', conn => {
       conn.on('open', (id) => {
         console.log(`Connect peer=${id}`)
         conn.send({
@@ -35,7 +36,7 @@ class RevieweeContainer extends Component {
       conn.on('data', function(message){
         switch(message.type) {
         case 'REVIEWER':
-          props.onAddReviewer(message.reviewer)
+          props.onAddReviewer(message.reviewer, conn)
           break
         case 'FILE_REQUEST':
           const file = props.files.find(f => f.name === message.filename)
@@ -51,9 +52,38 @@ class RevieweeContainer extends Component {
           break
         case 'UPDATE_REVIEWER':
           props.onUpdateReviewer(message.reviewer)
+          break
+        case 'REVIEW/ADD_COMMENT':
+        case 'REVIEW/UPDATE_COMMENT':
+        case 'REVIEW/MOVE_COMMENT':
+        case 'REVIEW/REMOVE_COMMENT':
+          props.onCommentAction(message)
+          break
         }
-      });
-    });
+      })
+
+      conn.on('close', () => {
+        const { reviewers, onRemoveReviewer } = this.props
+        reviewers.forEach(reviewer => {
+          console.log(reviewer.id+ ':' + reviewer.dataConnection + ':' + (reviewer.dataConnection === conn))
+          if (reviewer.dataConnection === conn) {
+            onRemoveReviewer(reviewer.id)
+          }
+        })
+      })
+    })
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { comments, reviewers } = nextProps
+    if (!reviewers) return
+
+    reviewers.forEach(reviewer => {
+      reviewer.dataConnection.send({
+        type: 'REVIEW/UPDATE_COMMENTS',
+        comments
+      })
+    })
   }
 
   componentDidMount() {
@@ -84,16 +114,29 @@ class RevieweeContainer extends Component {
       </div>
     )
   }
+
+  static propTypes = {
+    comments: PropTypes.array,
+    reviewers: PropTypes.array,
+    onRemoveReviewer: PropTypes.func.isRequired
+  }
 }
 
 const connector = connect(
   ({ review }) => review,
   (dispatch, props) => {
     return {
-      onAddReviewer: (reviewer) => {
+      onAddReviewer: (reviewer, dataConnection) => {
         dispatch({
           ...reviewer,
-          type: 'ADD_REVIEWER'
+          type: 'REVIEW/ADD_REVIEWER',
+          dataConnection
+        })
+      },
+      onRemoveReviewer: (reviewerId) => {
+        dispatch({
+          type: 'REVIEW/REMOVE_REVIEWER',
+          reviewerId
         })
       },
       onUpdateReviewer: reviewer => {
@@ -106,6 +149,9 @@ const connector = connect(
         dispatch({
           type: props.isStarted ? 'END_REVIEW' : 'START_REVIEW'
         })
+      },
+      onCommentAction: (action) => {
+        dispatch(action)
       }
     }
   }

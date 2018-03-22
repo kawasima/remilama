@@ -4,7 +4,7 @@ import { Form, Field } from 'react-final-form'
 import { required, composeValidators, mustBeUUID } from '../validators'
 
 const reviewIdField = ({ input, meta }) => (
-  <div className={'required field' + (meta.touched && meta.error && ' error')}>
+  <div className={'required field' + ((meta.touched && meta.error) ? ' error' : '')}>
     <label>Review ID</label>
     <input type="text" {...input} placeholder="Review ID" />
     <span className={'ui basic red pointing prompt label transition'
@@ -15,7 +15,7 @@ const reviewIdField = ({ input, meta }) => (
 )
 
 const reviewerNameField = ({ input, meta }) => (
-  <div className={'required field' + (meta.touched && meta.error && ' error')}>
+  <div className={'required field' + ((meta.touched && meta.error) ? ' error' : '')}>
     <label>Reviewer Name</label>
     <input type="text" {...input} placeholder="Your name" />
     <span className={'ui basic red pointing prompt label transition'

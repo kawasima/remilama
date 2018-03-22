@@ -28,33 +28,18 @@ function collect(connect, monitor) {
 }
 
 class ReviewComment extends React.Component {
-  static propTypes = {
-    id: PropTypes.string,
-    x: PropTypes.number,
-    y: PropTypes.number,
-    file: PropTypes.string,
-    page: PropTypes.number,
-    scale: PropTypes.number,
-    description: PropTypes.string,
-    onPostComment: PropTypes.func.isRequired,
-    onMoveComment: PropTypes.func.isRequired,
-    onDeleteComment: PropTypes.func.isRequired,
-    isDragging: PropTypes.bool.isRequired,
-    connectDragSource: PropTypes.func.isRequired
-  }
-
   state = {
     visible: true,
     editing: false
   }
 
   renderForm = () => {
-    const {id, description, onPostComment} = this.props
+    const {id, description, onUpdateComment} = this.props
     return (
       <Form
         onSubmit={values => {
           this.setState({ editing: false })
-          onPostComment(id, values.description)
+          onUpdateComment(id, values.description)
         }}
         initialValues={{ description }}
         render={({ handleSubmit, prinstine, invalid }) => {
@@ -79,18 +64,46 @@ class ReviewComment extends React.Component {
     )
   }
 
+  renderDeleteButton(id, onDeleteComment) {
+    return (
+      <div className="ui right floated mini button"
+           style={{
+             position: 'absolute',
+             backgroundColor: 'transparent',
+             padding:0,
+             right:0,
+             top:0
+             }}
+           onClick={(e) => {
+             e.stopPropagation()
+             onDeleteComment(id)
+        }}>
+        <i className="red small times icon"></i>
+      </div>
+    )
+  }
+
+  renderDescription = ({description}) => (
+    <div>
+      {description}
+    </div>
+  )
+
   render() {
     const {
-      id, x, y, scale, description,
+      id, x, y, scale, description, postedBy,
+      reviewer,
       onDeleteComment,
       isDragging,
       connectDragSource
     } = this.props
 
+    const deleteButton = (reviewer.id === postedBy.id) ? this.renderDeleteButton(id, onDeleteComment) : null
+
     const content = this.state.editing ?
           this.renderForm()
           :
-          <div>{description}</div>
+          this.renderDescription({description})
 
     return connectDragSource(
       <div className="ui segment"
@@ -103,27 +116,32 @@ class ReviewComment extends React.Component {
              background: 'linear-gradient(to right, #ffffcccc 0%, #f1f1c1cc 0.5%, #f1f1c1cc 13%, #ffffcccc 16%)',
              border: '1px solid #E8E8E8',
              visibility: isDragging ? 'hidden' : 'visible'
-
            }}
            onClick={(e) => this.setState({editing: true})}>
-        <div className="ui right floated mini button"
-             style={{
-             position: 'absolute',
-             backgroundColor: 'transparent',
-             padding:0,
-             right:0,
-             top:0
-             }}
-             onClick={(e) => {
-          e.stopPropagation()
-          onDeleteComment(id)
-          }}>
-          <i className="red small times icon"></i>
-        </div>
+        {deleteButton}
         {content}
       </div>
     )
   }
+
+  static propTypes = {
+    id: PropTypes.string,
+    x: PropTypes.number,
+    y: PropTypes.number,
+    file: PropTypes.string,
+    postedBy: PropTypes.object,
+    page: PropTypes.number,
+    scale: PropTypes.number,
+    description: PropTypes.string,
+    onUpdateComment: PropTypes.func.isRequired,
+    onMoveComment: PropTypes.func.isRequired,
+    onDeleteComment: PropTypes.func.isRequired,
+    isDragging: PropTypes.bool.isRequired,
+    connectDragSource: PropTypes.func.isRequired,
+    reviewer: PropTypes.object
+  }
+
+
 }
 
 export default DragSource('ReviewComment', reviewCommentSource, collect)(ReviewComment)

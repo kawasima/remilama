@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import uuidv4 from 'uuid/v4'
@@ -7,34 +8,69 @@ import ReviewComment from '../components/ReviewComment'
 import SelectReviewFile from '../components/SelectReviewFile'
 import DocumentControls from '../components/DocumentControls'
 
-function PdfContainer(props) {
-  const comments = props.comments
-        .filter(comment => comment.page == props.page)
-        .map(comment => {
-          return (
-            <ReviewComment {...comment}
-                           scale={props.scale}
-                           onMoveComment = {props.onMoveComment}
-                           onPostComment = {props.onPostComment}
-                           onDeleteComment = {props.onDeleteComment} />
-          )
-        })
-  return (props.file || props.binaryContent) ?
-    (
-      <div>
-        <DocumentControls {...props} />
-        <div style={{position: 'relative'}}>
-          <PdfDocument {...props}/>
-          {comments}
+function extractComments(review, reviewer, filename, page, scale) {
+  if (!review) return null
+
+  return review.comments
+    .filter(comment => comment.page === page && comment.filename === filename)
+    .map(comment => {
+      return (
+        <ReviewComment {...comment}
+                       scale={scale}
+                       reviewer={reviewer}
+                       onMoveComment = {review.onMoveComment}
+                       onUpdateComment = {review.onUpdateComment}
+                       onDeleteComment = {review.onDeleteComment} />
+      )
+    })
+}
+
+class PdfContainer extends React.Component {
+  render() {
+    const {
+      filename,
+      page,
+      scale,
+      review,
+      reviewer,
+    } = this.props
+
+    const comments = extractComments(review, reviewer, filename, page, scale)
+
+    return (this.props.file || this.props.binaryContent) ?
+      (
+        <div>
+          <DocumentControls {...this.props} />
+          <div style={{
+                 position: 'relative',
+                 overflow: 'scroll',
+                 border: '1px solid #cccccc'
+               }}>
+            <PdfDocument {...this.props}></PdfDocument>
+            {comments}
+          </div>
         </div>
-      </div>
-    )
+      )
     :
-    <SelectReviewFile {...props} />
+      <SelectReviewFile {...this.props} />
+  }
+
+  static propTypes = {
+    filename: PropTypes.string,
+    page: PropTypes.number,
+    scale: PropTypes.number,
+    review: PropTypes.object,
+    reviewer: PropTypes.object,
+    file: PropTypes.object,
+    binaryContent: PropTypes.instanceOf(ArrayBuffer),
+    onPageClick: PropTypes.func,
+  }
 }
 
 const connector = connect(
-  ({ pdf }) => pdf,
+  ({ pdf }) => {
+    return { ...pdf }
+},
   (dispatch, props) => {
     return {
       onDocumentComplete: numPages => dispatch({
@@ -71,40 +107,6 @@ const connector = connect(
           scale: scale / 1.2
         })
       },
-      onPageClick: (x, y, page, scale) => {
-        dispatch({
-          type: 'PDF/ADD_COMMENT',
-          id: uuidv4(),
-          x: x / scale,
-          y: y / scale,
-          page: page
-        })
-      },
-      onPostComment: (id, description) => {
-        dispatch({
-          type: 'PDF/UPDATE_COMMENT',
-          id: id,
-          changes: {
-            description: description
-          }
-        })
-      },
-      onMoveComment: ({id, x, y}) => {
-        dispatch({
-          type: 'PDF/UPDATE_COMMENT',
-          id: id,
-          changes: {
-            x: x,
-            y: y
-          }
-        })
-      },
-      onDeleteComment: (id) => {
-        dispatch({
-          type: 'PDF/REMOVE_COMMENT',
-          id: id
-        })
-      }
     }
   }
 )

@@ -261,14 +261,17 @@ f
       canvas.style.height = `${viewport.height / dpiScale}px`
       canvas.height = viewport.height
       canvas.width = viewport.width
-      canvas.addEventListener('click', (e) => {
-        const rect = e.target.getBoundingClientRect()
-        this.props.onPageClick(
-          e.clientX - rect.left,
-          e.clientY - rect.top,
-          this.props.page,
-          this.props.scale)})
-      page.render({ canvasContext, viewport })
+      if (this.props.onPageClick) {
+        canvas.addEventListener('click', (e) => {
+          const rect = e.target.getBoundingClientRect()
+          this.props.onPageClick(
+            this.props.filename,
+            this.props.page,
+            e.clientX - rect.left,
+            e.clientY - rect.top,
+            this.props.scale)})
+        page.render({ canvasContext, viewport })
+      }
     }
   }
 
@@ -300,6 +303,7 @@ PdfDocument.propTypes = {
   binaryContent: PropTypes.shape({
     data: PropTypes.any
   }),
+  filename: PropTypes.string,
   file: PropTypes.any,
   loading: PropTypes.any,
   page: PropTypes.number,

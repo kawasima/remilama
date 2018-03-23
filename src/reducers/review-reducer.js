@@ -65,6 +65,7 @@ export default (state = initialState, action) => {
                    id: action.id,
                    filename: action.filename,
                    postedBy: action.postedBy,
+                   postedAt: action.postedAt,
                    page: action.page,
                    x: action.x,
                    y: action.y,

@@ -270,8 +270,8 @@ f
             e.clientX - rect.left,
             e.clientY - rect.top,
             this.props.scale)})
-        page.render({ canvasContext, viewport })
       }
+      page.render({ canvasContext, viewport })
     }
   }
 

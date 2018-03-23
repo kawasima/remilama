@@ -7,6 +7,7 @@ import PdfContainer from '../containers/PdfContainer'
 import Review from '../components/Review'
 import Reviewer from '../components/Reviewer'
 import ReviewStatus from '../components/ReviewStatus'
+import ReviewCommentTable from '../components/ReviewCommentTable'
 
 class RevieweeContainer extends Component {
   constructor(props) {
@@ -23,7 +24,7 @@ class RevieweeContainer extends Component {
     })
 
     this.peer.on('connection', conn => {
-      const { review } = this.props.review
+      const { review } = this.props
       conn.on('open', (id) => {
         console.log(`Connect peer=${id}`)
         conn.send({
@@ -82,13 +83,14 @@ class RevieweeContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { comments, reviewers } = nextProps
-    if (!reviewers) return
+    const review = nextProps.review
 
-    reviewers.forEach(reviewer => {
+    if (!review.reviewers) return
+
+    review.reviewers.forEach(reviewer => {
       reviewer.dataConnection.send({
         type: 'REVIEW/UPDATE_COMMENTS',
-        comments
+        comments: review.comments
       })
     })
   }
@@ -136,7 +138,7 @@ class RevieweeContainer extends Component {
     return (
       <div>
         <h2 className="ui header">
-          <i className="plug icon"></i>
+          <i className="comment alternate outline icon"></i>
           <div className="content">
             Review
           </div>
@@ -146,6 +148,9 @@ class RevieweeContainer extends Component {
 
         { props.review.reviewers.map( reviewer => <Reviewer reviewer={reviewer} /> ) }
       {documentView}
+        <ReviewCommentTable
+      comments={props.review.comments}
+        />
       </div>
     )
   }

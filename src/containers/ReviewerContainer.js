@@ -48,7 +48,6 @@ class ReviewerContainer extends React.Component {
         props.onReceiveFile(message.file)
         break
       case 'REVIEW/UPDATE_COMMENTS':
-        console.log(message)
         props.onUpdateComments(message.comments)
         break
       }
@@ -88,6 +87,7 @@ class ReviewerContainer extends React.Component {
     reviewer.dataConnection.send({
       type: 'REVIEW/ADD_COMMENT',
       id: uuidv4(),
+      postedAt: new Date().getTime(),
       postedBy: {
         id: reviewer.id,
         name: reviewer.name
@@ -152,6 +152,12 @@ class ReviewerContainer extends React.Component {
     ) : null
     return (
       <div>
+        <h2 className="ui header">
+          <i className="comment alternate outline icon"></i>
+          <div className="content">
+            Review
+          </div>
+        </h2>
         <Review {...review}
                 onSelectFile={this.onSelectFile}/>
           {documentView}
@@ -194,7 +200,7 @@ const connector = connect(
           type: 'REVIEW/UPDATE_COMMENTS',
           comments
         })
-      }
+      },
     }
   }
 )

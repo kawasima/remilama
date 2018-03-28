@@ -2,20 +2,29 @@ import React from 'react'
 import { AppContainer } from 'react-hot-loader'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import store from './store'
+import { PersistGate } from 'redux-persist/integration/react'
+
+import { store, persistor } from './store'
 import App from './components/App'
 
 const root = document.querySelector('#root')
 
 if (process.env.NODE_ENV === 'production') {
-  ReactDOM.render(<Provider store={store}><App/></Provider>, root)
+  ReactDOM.render(
+    <Provider store={store}>
+      <PersistGate persistor={persistor}>
+        <App/>
+      </PersistGate>
+    </Provider>, root)
 } else {
   const render = async () => {
     const { default: App } = (await import('./components/App'))
     ReactDOM.render(
       <AppContainer>
         <Provider store={store}>
-          <App/>
+          <PersistGate persistor={persistor}>
+            <App/>
+          </PersistGate>
         </Provider>
       </AppContainer>,
       root

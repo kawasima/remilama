@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import HTML5Backend from 'react-dnd-html5-backend'
 import { DragDropContext } from 'react-dnd'
 
-import { history } from '../store'
 import Layout from './Layout'
 import HomeContainer from '../containers/HomeContainer'
 import ReviewerContainer from '../containers/ReviewerContainer'

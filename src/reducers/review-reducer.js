@@ -10,6 +10,8 @@ export default (state = initialState, action) => {
   switch (action.type) {
   case 'CREATE_REVIEW':
     return { ...state, ...action.review }
+  case 'REVIEW/INITIALIZE':
+    return initialState
   case 'ADD_REVIEW_FILE':
     return {
       ...state,
@@ -28,8 +30,7 @@ export default (state = initialState, action) => {
           ...state.reviewers,
           {
             id: action.id,
-            name: action.name,
-            dataConnection: action.dataConnection
+            name: action.name
           }
         ]
       }

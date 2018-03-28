@@ -58,6 +58,7 @@ class PdfContainer extends React.Component {
   static propTypes = {
     filename: PropTypes.string,
     page: PropTypes.number,
+    numPages: PropTypes.number,
     scale: PropTypes.number,
     review: PropTypes.object,
     reviewer: PropTypes.object,
@@ -93,6 +94,12 @@ const connector = connect(
         dispatch({
           type: 'PDF/GO_PAGE',
           page: page - 1
+        })
+      },
+      onGoToPage: (page) => {
+        dispatch({
+          type: 'PDF/GO_PAGE',
+          page: page
         })
       },
       onZoomIn: (scale) => {

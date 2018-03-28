@@ -98,7 +98,7 @@ class ReviewComment extends React.Component {
       connectDragSource
     } = this.props
 
-    const deleteButton = (reviewer && reviewer.id === postedBy.id) ? this.renderDeleteButton(id, onDeleteComment) : null
+    const deleteButton = (reviewer && reviewer.name === postedBy.name) ? this.renderDeleteButton(id, onDeleteComment) : null
 
     const content = this.state.editing ?
           this.renderForm()

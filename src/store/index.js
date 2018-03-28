@@ -1,4 +1,6 @@
 import { applyMiddleware, createStore } from 'redux'
+import { persistReducer, persistStore } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
 import promiseMiddleware from 'redux-promise'
 import { createLogger } from 'redux-logger'
 import { createBrowserHistory } from 'history'
@@ -6,11 +8,26 @@ import { syncHistoryWithStore, routerReducer, routerMiddleware } from 'react-rou
 
 import reducer from '../reducers'
 
-const browserHistory = createBrowserHistory()
-const store = createStore(reducer, applyMiddleware(
-  routerMiddleware(browserHistory),
-  promiseMiddleware,
-  createLogger()))
-export const history = syncHistoryWithStore(browserHistory, store)
+const persistConfig = {
+  key: 'review',
+  storage,
+  whitelist: ['review']
+}
 
-export default store
+const browserHistory = createBrowserHistory()
+const persistedReducer = persistReducer(persistConfig, reducer)
+const store = createStore(
+  persistedReducer,
+  applyMiddleware(
+    routerMiddleware(browserHistory),
+    promiseMiddleware,
+    createLogger()))
+
+console.log(store)
+
+const persistor = persistStore(store)
+
+export {
+  store,
+  persistor
+}

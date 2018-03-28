@@ -46,7 +46,7 @@ const renderJoinForm = ({ handleSubmit, pristine, invalid }) => (
   </form>
 )
 
-export default ({onJoinReview}) => (
+export default ({onNewReview, onJoinReview}) => (
   <div>
     <h2 className="ui header">
       <i className="plug icon"></i>
@@ -62,7 +62,7 @@ export default ({onJoinReview}) => (
           <div className="description">
             Create a review
             <div>
-              <Link className="ui primary button" to="/review/new">Create</Link>
+              <a className="ui primary button" onClick={onNewReview}>Create</a>
             </div>
           </div>
         </div>

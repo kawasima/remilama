@@ -1,8 +1,8 @@
 import React from 'react'
-import Peer from 'peerjs'
+import uuidv4 from 'uuid/v4'
 
 const renderFile = ({file, onSelectFile}) => (
-  <li key={file.name}>
+  <li key={uuidv4()}>
     <a onClick={(e) => onSelectFile(file.name)}
       style={{cursor: 'pointer'}}>
       {file.name}

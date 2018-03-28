@@ -24,6 +24,12 @@ const connector = connect(
             name: values.reviewer_name
           }
         })
+      },
+      onNewReview: e => {
+        props.history.push('/review/new')
+        dispatch({
+          type: 'REVIEW/INITIALIZE'
+        })
       }
     }
   }

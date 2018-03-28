@@ -2,10 +2,11 @@ import React from 'react'
 import { Form, FormSpy, Field } from 'react-final-form'
 import SelectReviewFile from './SelectReviewFile'
 import { required, composeValidators } from '../validators'
+import uuidv4 from 'uuid/v4'
 
 const reviewFile = ({file, onRemoveFile}) => {
   return (
-    <li key={file.name}>
+    <li key={uuidv4()}>
       {file.name}
       <button type="button"
               style={{backgroundColor: 'transparent'}}

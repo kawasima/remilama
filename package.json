@@ -4,6 +4,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
+    "test": "jest",
+    "test:watch": "yarn run test -o --watch",
     "build": "webpack --config webpack.config.production.js"
   },
   "author": "kawasima",
@@ -32,7 +34,7 @@
     "pdfjs-dist": "^2.0.428",
     "peer": "^0.2.8",
     "peerjs": "^0.3.14",
-    "react": "^16.2.0",
+    "react": "^16.3.0-rc.0",
     "react-dnd": "^2.5.4",
     "react-dnd-html5-backend": "^2.5.4",
     "react-dom": "^16.2.0",
@@ -43,6 +45,7 @@
     "react-router-redux": "^4.0.8",
     "redux": "^3.7.2",
     "redux-logger": "^3.0.6",
+    "redux-persist": "^5.9.1",
     "redux-promise": "^0.5.3",
     "uuid": "^3.2.1"
   },
@@ -60,6 +63,7 @@
     "babel-loader": "8.0.0-beta.2",
     "css-loader": "^0.28.11",
     "eslint": "^4.18.2",
+    "jest": "^22.4.3",
     "license-webpack-plugin": "^1.2.3",
     "react-hot-loader": "^4.0.0",
     "style-loader": "^0.20.3",

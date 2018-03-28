@@ -10,6 +10,9 @@ import ReviewStatus from '../components/ReviewStatus'
 import ReviewCommentTable from '../components/ReviewCommentTable'
 
 class RevieweeContainer extends Component {
+  state = {
+    dataConnections: {}
+  }
   constructor(props) {
     super(props)
     this.peer = null
@@ -45,7 +48,16 @@ class RevieweeContainer extends Component {
         } = this.props
         switch(message.type) {
         case 'REVIEWER':
-          onAddReviewer(message.reviewer, conn)
+          this.setState({ dataConnections:
+                          {...this.state.dataConnections,
+                           [message.reviewer.id]: conn}
+                        })
+          const reviewer = review.reviewers.find(reviewer => reviewer.name === message.reviewer.name)
+          if (reviewer) {
+
+          } else {
+            onAddReviewer(message.reviewer)
+          }
           break
         case 'FILE_REQUEST':
           const file = review.files.find(f => f.name === message.filename)
@@ -73,8 +85,9 @@ class RevieweeContainer extends Component {
 
       conn.on('close', () => {
         const { review, onRemoveReviewer } = this.props
+        const { dataConnections } = this.state
         review.reviewers.forEach(reviewer => {
-          if (reviewer.dataConnection === conn) {
+          if (dataConnections[reviewer.id] === conn) {
             onRemoveReviewer(reviewer.id)
           }
         })
@@ -84,11 +97,13 @@ class RevieweeContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     const review = nextProps.review
+    const { dataConnections } = this.state
 
     if (!review.reviewers) return
 
+    console.log(dataConnections)
     review.reviewers.forEach(reviewer => {
-      reviewer.dataConnection.send({
+      dataConnections[reviewer.id].send({
         type: 'REVIEW/UPDATE_COMMENTS',
         comments: review.comments
       })
@@ -169,11 +184,10 @@ const connector = connect(
   },
   (dispatch, props) => {
     return {
-      onAddReviewer: (reviewer, dataConnection) => {
+      onAddReviewer: (reviewer) => {
         dispatch({
           ...reviewer,
-          type: 'REVIEW/ADD_REVIEWER',
-          dataConnection
+          type: 'REVIEW/ADD_REVIEWER'
         })
       },
       onRemoveReviewer: (reviewerId) => {

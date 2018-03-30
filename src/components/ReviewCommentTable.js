@@ -81,9 +81,10 @@ export default class ReviewCommentTable extends React.Component {
                       width,
                       allowInsertColumn: false,
                       allowInsertRow: false,
-                      onAfterSetDataAtCell: (changes) => {
+                      onAfterChange: (changes) => {
+                        if (changes === null) return
                         changes.forEach(([row, col, oldValue, value]) => {
-                          onChangeCustomValue(data[row].id, col, value)
+                          setTimeout(() => onChangeCustomValue(data[row].id, col, value), 100)
                         })
                       }
                     }}/>
@@ -96,5 +97,6 @@ export default class ReviewCommentTable extends React.Component {
 ReviewCommentTable.propTypes = {
   comments: PropTypes.array,
   customFields: PropTypes.array,
-  customValues: PropTypes.object
+  customValues: PropTypes.object,
+  onChangeCustomValue: PropTypes.func
 }

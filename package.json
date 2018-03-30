@@ -31,6 +31,7 @@
     "express": "^4.16.3",
     "final-form": "^4.3.1",
     "handsontable": "^0.38.1",
+    "is-array-buffer": "^1.0.0",
     "pdfjs-dist": "^2.0.428",
     "peer": "^0.2.8",
     "peerjs": "^0.3.14",

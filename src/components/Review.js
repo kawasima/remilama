@@ -34,7 +34,7 @@ const Review = ({
     <ul>
       {
         files.map(file => {
-          file.object = fileObject.find(f => f.name === file.name)
+          file.object = (fileObject || []).find(f => f.name === file.name)
           return renderFile({file, onSelectFile, onReSelectFile, isReviewee})
         })
       }
@@ -42,7 +42,7 @@ const Review = ({
   )
 
   return (
-    <div className="ui raised segment">
+    <div className="ui segment">
       <p>Review: {name} ({id})</p>
 
       <div>

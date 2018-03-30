@@ -26,7 +26,7 @@ class RevieweeContainer extends Component {
     })
 
     this.peer.on('connection', conn => {
-      const { review } = this.props
+      const { review, fileObject } = this.props
       conn.on('open', (id) => {
         console.log(`Connect peer=${id}`)
         conn.send({
@@ -59,7 +59,7 @@ class RevieweeContainer extends Component {
           }
           break
         case 'FILE_REQUEST':
-          const file = review.files.find(f => f.name === message.filename)
+          const file = fileObject.find(f => f.name === message.filename)
           const reader = new FileReader()
           reader.onload = () => conn.send({
             type: 'FILE_RESPONSE',
@@ -101,10 +101,13 @@ class RevieweeContainer extends Component {
     if (!review.reviewers) return
 
     review.reviewers.forEach(reviewer => {
-      dataConnections[reviewer.id].send({
-        type: 'REVIEW/UPDATE_COMMENTS',
-        comments: review.comments
-      })
+      const dataConnection = dataConnections[reviewer.id]
+      if (dataConnection) {
+        dataConnection.send({
+          type: 'REVIEW/UPDATE_COMMENTS',
+          comments: review.comments
+        })
+      }
     })
   }
 
@@ -148,8 +151,17 @@ class RevieweeContainer extends Component {
           :
           null
 
+    const commentTable = (props.review.comments.length > 0) ?
+          (
+            <ReviewCommentTable
+              comments={props.review.comments}
+              customFields={props.review.customFields}
+              customValues={props.review.customValues}
+              onChangeCustomValue={props.onChangeCustomValue}
+              />
+          ) : null
     return (
-      <div>
+      <div className="ui teal raised segment">
         <h2 className="ui header">
           <i className="comment alternate outline icon"></i>
           <div className="content">
@@ -164,12 +176,7 @@ class RevieweeContainer extends Component {
 
         { props.review.reviewers.map( reviewer => <Reviewer key={reviewer.id} reviewer={reviewer} /> ) }
       {documentView}
-        <ReviewCommentTable
-      comments={props.review.comments}
-      customFields={props.review.customFields}
-      customValues={props.review.customValues}
-      onChangeCustomValue={props.onChangeCustomValue}
-        />
+      {commentTable}
         </div>
     )
   }

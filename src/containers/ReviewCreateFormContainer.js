@@ -6,9 +6,9 @@ import uuidv4 from 'uuid/v4'
 
 function ReviewCreateFormContainer(props) {
   return (
-    <div>
+    <div className="ui teal segment">
       <h2 className="ui header">
-        <i className="plug icon"></i>
+        <i className="edit outline icon"></i>
         <div className="content">
           Create a New Review
         </div>

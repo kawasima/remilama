@@ -1,5 +1,4 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import { Form, Field } from 'react-final-form'
 import { required, composeValidators, mustBeUUID } from '../validators'
 
@@ -48,12 +47,19 @@ const renderJoinForm = ({ handleSubmit, pristine, invalid }) => (
 
 export default ({onNewReview, onJoinReview}) => (
   <div>
-    <h2 className="ui header">
-      <i className="plug icon"></i>
+    <div className="ui segment">
+      <h2 className="ui header">
+        <i className="comment icon"></i>
+        <div className="content">
+          Remilama
+        </div>
+      </h2>
       <div className="content">
-        Remilama
+        <p>
+          Remilama is a realtime review tool.
+        </p>
       </div>
-    </h2>
+    </div>
 
     <div className="ui grid container">
       <div className="eight wide column">
@@ -78,11 +84,5 @@ export default ({onNewReview, onJoinReview}) => (
         </div>
       </div>
     </div>
-
-    <h4 className="ui horizontal divider header">
-      <i className="bell outline icon"></i>
-      For Development
-    </h4>
-    <Link to='/pdf'>PDF</Link>
   </div>
 )

@@ -16,6 +16,7 @@ function extractComments(review, reviewer, filename, page, scale) {
     .map(comment => {
       return (
         <ReviewComment {...comment}
+                       key={comment.id}
                        scale={scale}
                        reviewer={reviewer}
                        onMoveComment = {review.onMoveComment}

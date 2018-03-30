@@ -11,7 +11,7 @@ import reducer from '../reducers'
 const persistConfig = {
   key: 'review',
   storage,
-  whitelist: ['review']
+  whitelist: ['review', 'reviewer']
 }
 
 const browserHistory = createBrowserHistory()
@@ -22,8 +22,6 @@ const store = createStore(
     routerMiddleware(browserHistory),
     promiseMiddleware,
     createLogger()))
-
-console.log(store)
 
 const persistor = persistStore(store)
 

@@ -1,10 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
 import uuidv4 from 'uuid/v4'
+import isArrayBuffer from 'is-array-buffer'
 import Review from '../components/Review'
-import SelectReviewFile from '../components/SelectReviewFile'
 import PdfContainer from '../containers/PdfContainer'
 import Peer from 'peerjs'
 
@@ -16,7 +15,10 @@ class ReviewerContainer extends React.Component {
     pdf: PropTypes.object
   }
 
-  state = {}
+  state = {
+    peer: null,
+    dataConnection: null
+  }
 
   componentDidMount() {
     const props = this.props
@@ -31,11 +33,11 @@ class ReviewerContainer extends React.Component {
       console.error(err.type)
     })
 
-    const conn = peer.connect(props.reviewer.reviewId)
-    conn.on('data', message => {
+    const dataConnection = peer.connect(props.reviewer.reviewId)
+    dataConnection.on('data', message => {
       switch(message.type) {
       case 'REVIEW_INFO':
-        conn.send({
+        dataConnection.send({
           type: 'REVIEWER',
           reviewer: {
             id: props.reviewer.id,
@@ -52,21 +54,28 @@ class ReviewerContainer extends React.Component {
         break
       }
     })
-    props.onCreatePeer(peer, conn)
+    dataConnection.on('error', err => {
+      console.error(err)
+    })
+    this.setState({peer, dataConnection})
   }
 
   componentWillUnmount() {
-    const { reviewer } = this.props
-    reviewer.peer.disconnect()
-    reviewer.peer.destroy()
+    const { peer } = this.state
+    if (peer) {
+      peer.disconnect()
+      peer.destroy()
+    }
   }
 
   onPageComplete = page => {
     const { reviewer, pdf }  = this.props
+    const { dataConnection } = this.state
 
-    reviewer.dataConnection.send({
+    dataConnection.send({
       type: 'UPDATE_REVIEWER',
       reviewer: {
+
         id: reviewer.id,
         action: `Show the ${pdf.page} page on ${reviewer.file.name}`
       }
@@ -74,7 +83,7 @@ class ReviewerContainer extends React.Component {
   }
 
   onSelectFile = filename => {
-    const { dataConnection } = this.props.reviewer
+    const { dataConnection } = this.state
     dataConnection.send({
       type: 'FILE_REQUEST',
       filename: filename
@@ -83,8 +92,9 @@ class ReviewerContainer extends React.Component {
 
   onPostComment = (filename, page, x, y, scale) => {
     const { reviewer } = this.props
+    const { dataConnection } = this.state
 
-    reviewer.dataConnection.send({
+    dataConnection.send({
       type: 'REVIEW/ADD_COMMENT',
       id: uuidv4(),
       postedAt: new Date().getTime(),
@@ -100,7 +110,7 @@ class ReviewerContainer extends React.Component {
   }
 
   onUpdateComment = (id, description) => {
-    const { dataConnection } = this.props.reviewer
+    const { dataConnection } = this.state
 
     dataConnection.send({
       type: 'REVIEW/UPDATE_COMMENT',
@@ -125,7 +135,7 @@ class ReviewerContainer extends React.Component {
   }
 
   onDeleteComment = (id) => {
-    const { dataConnection } = this.props.reviewer
+    const { dataConnection } = this.state
 
     dataConnection.send({
       type: 'REVIEW/REMOVE_COMMENT',
@@ -135,7 +145,7 @@ class ReviewerContainer extends React.Component {
 
   render() {
     const { review, reviewer, pdf } = this.props
-    const documentView = (reviewer.file) ? (
+    const documentView = (isArrayBuffer(reviewer.file.blob)) ? (
       <PdfContainer {...pdf}
                     review={{
                       ...review,
@@ -151,7 +161,7 @@ class ReviewerContainer extends React.Component {
         />
     ) : null
     return (
-      <div>
+      <div className="ui segment">
         <h2 className="ui header">
           <i className="comment alternate outline icon"></i>
           <div className="content">
@@ -176,16 +186,9 @@ const connector = connect(
   },
   (dispatch) => {
     return {
-      onCreatePeer: (peer, dataConnection) => {
-        dispatch({
-          type: 'REVIEWER/CREATE_PEER',
-          peer: peer,
-          dataConnection: dataConnection
-        })
-      },
       onConnectReview: (review) => {
         dispatch({
-          type: 'CREATE_REVIEW',
+          type: 'REVIEW/CREATE_REVIEW',
           review
         })
       },

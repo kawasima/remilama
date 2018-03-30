@@ -1,11 +1,5 @@
 export default (state = {}, action) => {
   switch (action.type) {
-  case 'REVIEWER/CREATE_PEER':
-    return {
-      ...state,
-      peer: action.peer,
-      dataConnection: action.dataConnection
-    }
   case 'JOIN_REVIEW':
     return {
       ...state,

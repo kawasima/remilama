@@ -110,7 +110,7 @@ export default (state = initialState, action) => {
     return {
       ...state,
       customValues: {...state.customValues,
-                     [action.commendId]: {
+                     [action.commentId]: {
                        ...state.customValues[action.commentId],
                        [action.customFieldId]: action.value
                      }

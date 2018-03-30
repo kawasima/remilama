@@ -1,6 +1,4 @@
 import React from 'react'
-import { Field } from 'react-final-form'
-import { mustBePDF } from '../validators'
 
 export default ({onSelectFile}) => (
   <input name="file" type="file" value="" onChange={

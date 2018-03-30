@@ -28,19 +28,20 @@ const renderType = (
   <Field name="customCommentFieldType" component="select">
     <option />
     <option value="text">Text</option>
-    <option value="pulldown">Pulldown</option>
+    <option value="dropdown">Dropdown</option>
   </Field>
 )
 
 
-const renderOptions = ({ input, meta }) => (
+const renderSource = ({ input, meta }) => (
   <div>
-    <label>Options</label>
+    <label>Source</label>
     <textarea {...input} />
     {meta.touched && meta.error && <span>{meta.error}</span>}
   </div>
 )
-export default ({id, label, type, options}) => {
+
+export default ({id, label, type, source}) => {
   return (
     <div>
       {renderId}

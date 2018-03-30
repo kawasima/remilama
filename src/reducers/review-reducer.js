@@ -3,21 +3,35 @@ const initialState = {
   name: null,
   files: [],
   reviewers: [],
-  comments: []
+  comments: [],
+  customFields: [
+    {
+      id: 'fixes',
+      label: 'Fixes',
+      type: 'text'
+    },
+    {
+      id: 'cause',
+      label: 'Cause',
+      type: 'dropdown',
+      source: ['Carelessly', 'Malicious']
+    },
+  ],
+  customValues: {}
 }
 
 export default (state = initialState, action) => {
   switch (action.type) {
-  case 'CREATE_REVIEW':
+  case 'REVIEW/CREATE_REVIEW':
     return { ...state, ...action.review }
   case 'REVIEW/INITIALIZE':
     return initialState
-  case 'ADD_REVIEW_FILE':
+  case 'REVIEW/ADD_REVIEW_FILE':
     return {
       ...state,
       files: [ ...state.files, action.file ]
     }
-  case 'REMOVE_REVIEW_FILE':
+  case 'REVIEW/REMOVE_REVIEW_FILE':
     return {
       ...state,
       files: state.files.filter(f => f.name !== action.filename)
@@ -87,7 +101,24 @@ export default (state = initialState, action) => {
       ...state,
       comments: state.comments.filter(comment => comment.id !== action.id)
     }
+  case 'REVIEW/SET_CUSTOM_FIELDS':
+    return {
+      ...state,
+      customFields: action.customFields
+    }
+  case 'REVIEW/SET_CUSTOM_VALUE':
+    return {
+      ...state,
+      customValues: {...state.customValues,
+                     [action.commendId]: {
+                       ...state.customValues[action.commentId],
+                       [action.customFieldId]: action.value
+                     }
+                    }
+    }
   default:
     return state
   }
+
+
 }

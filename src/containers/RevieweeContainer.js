@@ -1,12 +1,11 @@
+/* global FileReader */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Peer from 'peerjs'
-import uuidv4 from 'uuid/v4'
 import PdfContainer from '../containers/PdfContainer'
 import Review from '../components/Review'
 import Reviewer from '../components/Reviewer'
-import ReviewStatus from '../components/ReviewStatus'
 import ReviewCommentTable from '../components/ReviewCommentTable'
 
 class RevieweeContainer extends Component {
@@ -101,7 +100,6 @@ class RevieweeContainer extends Component {
 
     if (!review.reviewers) return
 
-    console.log(dataConnections)
     review.reviewers.forEach(reviewer => {
       dataConnections[reviewer.id].send({
         type: 'REVIEW/UPDATE_COMMENTS',
@@ -123,8 +121,8 @@ class RevieweeContainer extends Component {
   }
 
   onSelectFile = filename => {
-    const { review, dispatch } = this.props
-    const file = review.files.find(f => f.name === filename)
+    const { fileObject, dispatch } = this.props
+    const file = fileObject.find(f => f.name === filename)
     const reader = new FileReader()
     reader.onload = () => dispatch({
       type: 'REVIEWER/SHOW_FILE',
@@ -144,8 +142,8 @@ class RevieweeContainer extends Component {
                     review={props.review}
                     filename={props.reviewer.file.name}
                     binaryContent={props.reviewer.file.blob}
-                    onPageComplete={e => {}}
-                    />
+                    onPageComplete={() => {}}
+        />
     )
           :
           null
@@ -159,14 +157,20 @@ class RevieweeContainer extends Component {
           </div>
         </h2>
         <Review {...props.review}
-                onSelectFile={this.onSelectFile}/>
+                onSelectFile={this.onSelectFile}
+                onReSelectFile={props.onReSelectFile}
+                fileObject={props.fileObject}
+                isReviewee={true}/>
 
-        { props.review.reviewers.map( reviewer => <Reviewer reviewer={reviewer} /> ) }
+        { props.review.reviewers.map( reviewer => <Reviewer key={reviewer.id} reviewer={reviewer} /> ) }
       {documentView}
         <ReviewCommentTable
       comments={props.review.comments}
+      customFields={props.review.customFields}
+      customValues={props.review.customValues}
+      onChangeCustomValue={props.onChangeCustomValue}
         />
-      </div>
+        </div>
     )
   }
 
@@ -174,13 +178,15 @@ class RevieweeContainer extends Component {
     reviewer: PropTypes.object,
     review: PropTypes.object,
     pdf: PropTypes.object,
-    onRemoveReviewer: PropTypes.func.isRequired
+    fileObject: PropTypes.array,
+    onRemoveReviewer: PropTypes.func.isRequired,
+    onChangeCustomValue: PropTypes.func.isRequired
   }
 }
 
 const connector = connect(
-  ({ review, reviewer, pdf }) => {
-    return { review, reviewer, pdf }
+  ({ review, reviewer, pdf, fileObject }) => {
+    return { review, reviewer, pdf, fileObject }
   },
   (dispatch, props) => {
     return {
@@ -209,6 +215,22 @@ const connector = connect(
       },
       onCommentAction: (action) => {
         dispatch(action)
+      },
+      onChangeCustomValue: (commentId, customFieldId, value) => {
+        dispatch({
+          type: 'REVIEW/SET_CUSTOM_VALUE',
+          commentId,
+          customFieldId,
+          value
+        })
+      },
+      onReSelectFile: (file) => {
+        if (file) {
+          dispatch({
+            type: 'FILE_OBJECT/ADD_FILE',
+            file: file
+          })
+        }
       },
       dispatch
     }

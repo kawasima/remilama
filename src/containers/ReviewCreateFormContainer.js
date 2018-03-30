@@ -22,10 +22,10 @@ const connector = connect(
   ({ review }) => review,
   (dispatch, props) => {
     return {
-      onCreateReview: (values, form, cb) => {
+      onCreateReview: (values) => {
         const id = uuidv4()
         dispatch({
-          type: 'CREATE_REVIEW',
+          type: 'REVIEW/CREATE_REVIEW',
           review: {
             id: id,
             name: values.review_name
@@ -36,7 +36,11 @@ const connector = connect(
       onSelectFile: file => {
         if (file) {
           dispatch({
-            type: 'ADD_REVIEW_FILE',
+            type: 'REVIEW/ADD_REVIEW_FILE',
+            file: { name: file.name, size: file.size }
+          })
+          dispatch({
+            type: 'FILE_OBJECT/ADD_FILE',
             file: file
           })
         }
@@ -44,7 +48,11 @@ const connector = connect(
       onRemoveFile: filename => {
         if (filename) {
           dispatch({
-            type: 'REMOVE_REVIEW_FILE',
+            type: 'REVIEW/REMOVE_REVIEW_FILE',
+            filename: filename
+          })
+          dispatch({
+            type: 'FILE_OBJECT/REMOVE_FILE',
             filename: filename
           })
         }

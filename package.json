@@ -1,12 +1,27 @@
 {
   "name": "remilama",
+  "description": "A tool for reviewing documents",
   "version": "0.1.0-SNAPSHOT",
+  "keywords": [
+    "Review",
+    "WebRTC"
+  ],
+  "homepage": "https://github.com/kawasima/remilama",
+  "bugs": {
+    "url": "https://github.com/kawasima/remilama/issues",
+    "email": "kawasima1016@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kawasima/remilama"
+  },
   "main": "index.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "cross-env NODE_ENV=development node app.js",
     "test": "jest",
     "test:watch": "yarn run test -o --watch",
-    "build": "webpack --config webpack.config.production.js"
+    "build": "webpack --config webpack.config.production.js",
+    "production": "cross-env NODE_ENV=production node app.js"
   },
   "author": "kawasima",
   "license": "MIT",
@@ -62,6 +77,7 @@
     "@babel/preset-env": "^7.0.0-beta.42",
     "@babel/runtime": "^7.0.0-beta.42",
     "babel-loader": "8.0.0-beta.2",
+    "cross-env": "^5.1.4",
     "css-loader": "^0.28.11",
     "eslint": "^4.18.2",
     "jest": "^22.4.3",

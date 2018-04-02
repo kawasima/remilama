@@ -46,41 +46,41 @@ const renderJoinForm = ({ handleSubmit, pristine, invalid }) => (
 )
 
 export default ({onNewReview, onJoinReview}) => (
-  <div>
-    <div className="ui segment">
-      <h2 className="ui header">
-        <i className="comment icon"></i>
+  <div className="ui stackable grid container">
+    <div className="sixteen wide column">
+      <div className="ui segment">
+        <h2 className="ui header">
+          <i className="comment icon"></i>
+          <div className="content">
+            Remilama
+          </div>
+        </h2>
         <div className="content">
-          Remilama
+          <p>
+            Remilama is a realtime review tool.
+          </p>
         </div>
-      </h2>
-      <div className="content">
-        <p>
-          Remilama is a realtime review tool.
-        </p>
       </div>
     </div>
 
-    <div className="ui grid container">
-      <div className="eight wide column">
-        <div className="ui raised segment">
-          <div className="ui header">Reviewer</div>
-          <div className="description">
-            Create a review
-            <div>
-              <a className="ui primary button" onClick={onNewReview}>Create</a>
-            </div>
+    <div className="eight wide column">
+      <div className="ui raised segment">
+        <div className="ui header">Reviewer</div>
+        <div className="description">
+          Create a review
+          <div>
+            <a className="ui primary button" onClick={onNewReview}>Create</a>
           </div>
         </div>
       </div>
-      <div className="eight wide column">
-        <div className="ui raised segment">
-          <div className="ui header">Reviewee</div>
-          <div className="description">
-            <Form
-              onSubmit={onJoinReview}
-              render={renderJoinForm}/>
-          </div>
+    </div>
+    <div className="eight wide column">
+      <div className="ui raised segment">
+        <div className="ui header">Reviewee</div>
+        <div className="description">
+          <Form
+            onSubmit={onJoinReview}
+            render={renderJoinForm}/>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { Form, Field } from 'react-final-form'
 import { required, composeValidators, mustBeUUID } from '../validators'
 
@@ -86,3 +87,29 @@ export default ({onNewReview, onJoinReview}) => (
     </div>
   </div>
 )
+
+reviewIdField.propTypes = {
+  input: PropTypes.shape({
+    value: PropTypes.any
+  }),
+  meta: PropTypes.shape({
+    error: PropTypes.any,
+    touched: PropTypes.bool
+  })
+}
+
+reviewerNameField.propTypes = {
+  input: PropTypes.shape({
+    value: PropTypes.any
+  }),
+  meta: PropTypes.shape({
+    error: PropTypes.any,
+    touched: PropTypes.bool
+  })
+}
+
+renderJoinForm.propTypes = {
+  handleSubmit: PropTypes.func,
+  pristine: PropTypes.bool,
+  invalid: PropTypes.bool
+}

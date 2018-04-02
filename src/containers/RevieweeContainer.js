@@ -3,6 +3,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Peer from 'peerjs'
+import isArrayBuffer from 'is-array-buffer'
 import PdfContainer from '../containers/PdfContainer'
 import Review from '../components/Review'
 import Reviewer from '../components/Reviewer'
@@ -140,7 +141,7 @@ class RevieweeContainer extends Component {
   render() {
     const props = this.props
 
-    const documentView = (props.reviewer.file) ? (
+    const documentView = isArrayBuffer(props.reviewer.file.blob) ? (
       <PdfContainer {...props.pdf}
                     review={props.review}
                     filename={props.reviewer.file.name}

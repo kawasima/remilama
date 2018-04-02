@@ -4,19 +4,7 @@ const initialState = {
   files: [],
   reviewers: [],
   comments: [],
-  customFields: [
-    {
-      id: 'fixes',
-      label: 'Fixes',
-      type: 'text'
-    },
-    {
-      id: 'cause',
-      label: 'Cause',
-      type: 'dropdown',
-      source: ['Carelessly', 'Malicious']
-    },
-  ],
+  customFields: [],
   customValues: {}
 }
 

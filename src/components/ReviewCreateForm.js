@@ -1,7 +1,9 @@
 import React from 'react'
-import { Form, FormSpy, Field } from 'react-final-form'
+import PropTypes from 'prop-types'
+import { Form, Field } from 'react-final-form'
 import SelectReviewFile from './SelectReviewFile'
-import { required, composeValidators } from '../validators'
+import CustomCommentField from './CustomCommentField'
+import { required } from '../validators'
 import uuidv4 from 'uuid/v4'
 
 const reviewFile = ({file, onRemoveFile}) => {
@@ -11,7 +13,7 @@ const reviewFile = ({file, onRemoveFile}) => {
       <button type="button"
               style={{backgroundColor: 'transparent'}}
               className="ui circular icon button"
-              onClick={(e) => onRemoveFile(file.name)}>
+              onClick={() => onRemoveFile(file.name)}>
         <i className="red times icon"></i>
       </button>
     </li>
@@ -29,7 +31,37 @@ const reviewNameField = ({ input, meta }) => (
   </div>
 )
 
-const renderForm = ({files, onSelectFile, onRemoveFile}) => {
+class AdvancedSettings extends React.Component {
+  state = {
+    openAdvanced: false
+  }
+
+  onToggleAdvanced() {
+    this.setState({ openAdvanced: !this.state.openAdvanced })
+  }
+
+  render() {
+    const { onUploadCustomFields } = this.props
+    const advancedTitleClass = this.state.openAdvanced ? 'title active' : 'title'
+    const advancedContentClass = this.state.openAdvanced ? 'content active': 'content'
+
+    return (
+      <div className="ui accordion">
+        <div className={advancedTitleClass} onClick={() => this.onToggleAdvanced()}>
+          <i className="dropdown icon"></i>Advanced
+        </div>
+          <div className={advancedContentClass}>
+            <div className="field">
+              <label>Custom Fields</label>
+              <CustomCommentField onUploadCustomFields={onUploadCustomFields} />
+            </div>
+          </div>
+      </div>
+    )
+  }
+}
+const renderForm = ({files, onSelectFile, onRemoveFile, onUploadCustomFields}) => {
+  const fileList = files ? (<ul>{files.map(file => reviewFile({file, onRemoveFile}))}</ul>) : null
   return ({ handleSubmit, pristine, invalid }) => (
     <form className="ui form" onSubmit={handleSubmit}>
       <span>{invalid}</span>
@@ -40,25 +72,36 @@ const renderForm = ({files, onSelectFile, onRemoveFile}) => {
 
       <div className="required field">
         <label>Review files</label>
-        { files ? (<ul>{files.map(file => reviewFile({file, onRemoveFile}))}</ul>) : null }
-      <SelectReviewFile onSelectFile={onSelectFile}/>
+        { fileList }
+        <SelectReviewFile onSelectFile={onSelectFile}/>
       </div>
 
+      <AdvancedSettings onUploadCustomFields={onUploadCustomFields}/>
       <button type="submit"
               className="ui primary button"
               disabled={pristine || invalid || files.length==0}>Create</button>
-      </form>
+    </form>
   )
 }
 
 class ReviewCreateForm extends React.Component {
+  static propTypes = {
+    files: PropTypes.array,
+    onSelectFile: PropTypes.func.isRequired,
+    onCreateReview: PropTypes.func.isRequired,
+    onRemoveFile: PropTypes.func.isRequired,
+    onUploadCustomFields: PropTypes.func.isRequired,
+  }
+
   render() {
-    const { files, onSelectFile, onCreateReview, onRemoveFile } = this.props
+    const { files, onSelectFile, onCreateReview, onRemoveFile, onUploadCustomFields } = this.props
     return (
     <div>
       <Form
         onSubmit={onCreateReview}
-        render={renderForm({files, onSelectFile, onRemoveFile})}/>
+        render={renderForm({files, onSelectFile, onRemoveFile, onUploadCustomFields})
+        }
+        />
     </div>
     )
   }

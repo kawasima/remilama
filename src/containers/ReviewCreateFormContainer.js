@@ -1,3 +1,4 @@
+/* global FileReader */
 import React from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
@@ -56,6 +57,16 @@ const connector = connect(
             filename: filename
           })
         }
+      },
+      onUploadCustomFields: file => {
+        const reader = new FileReader()
+        reader.onload = e => {
+          dispatch({
+            type: 'REVIEW/SET_CUSTOM_FIELDS',
+            customFields: JSON.parse(e.target.result)
+          })
+        }
+        reader.readAsText(file)
       }
     }
   }

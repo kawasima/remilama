@@ -3,34 +3,12 @@ import PropTypes from 'prop-types'
 import ReactDOM from 'react-dom'
 import HotTable from '../components/HotTable'
 
-const idRenderer = (instance, td, row, col, prop, value) => {
-  if (value) {
-    ReactDOM.render(
-      <a href="javascript:void(0)">
-        {value.replace(/-.*$/, '')}
-      </a>
-        , td)
-  }
-}
-
 const defaultColHeaders = [
   'ID',
   'PostedBy',
   'Description',
   'Document name',
   'Page'
-]
-
-const defaultColumns = [
-  {
-    data: 'id',
-    renderer: idRenderer,
-    readonly: true
-  },
-  {data: 'postedBy.name', readOnly: true},
-  {data: 'description', readOnly: true},
-  {data: 'filename', readOnly: true},
-  {data: 'page', readOnly: true}
 ]
 
 export default class ReviewCommentTable extends React.Component {
@@ -41,6 +19,21 @@ export default class ReviewCommentTable extends React.Component {
   componentDidMount() {
     const container = this.container
     this.setState({width: container.getBoundingClientRect().width - 50})
+  }
+
+  idRenderer(instance, td, row, col, prop, value) {
+    const { comments, onGoToPage, onSelectFile } = this.props
+    if (value) {
+      ReactDOM.render(
+        <a href="javascript:void(0)" onClick={() => {
+            onSelectFile(comments[row].filename)
+            onGoToPage(comments[row].page)
+          }}>
+          {value.replace(/-.*$/, '')}
+        </a>
+        , td)
+    }
+    return td;
   }
 
   render() {
@@ -57,7 +50,15 @@ export default class ReviewCommentTable extends React.Component {
       ...(customFields.map(f => f.label))
     ]
     const columns = [
-      ...defaultColumns,
+      {
+        data: 'id',
+        renderer: (instance, td, row, col, prop, value) => this.idRenderer(instance, td, row, col, prop, value),
+        readonly: true
+      },
+      {data: 'postedBy.name', readOnly: true},
+      {data: 'description', readOnly: true},
+      {data: 'filename', readOnly: true},
+      {data: 'page', readOnly: true},
       ...(customFields.map(f => {
         switch (f.type) {
         case 'text':
@@ -98,5 +99,7 @@ ReviewCommentTable.propTypes = {
   comments: PropTypes.array,
   customFields: PropTypes.array,
   customValues: PropTypes.object,
-  onChangeCustomValue: PropTypes.func
+  onChangeCustomValue: PropTypes.func,
+  onGoToPage: PropTypes.func,
+  onSelectFile: PropTypes.func
 }

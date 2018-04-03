@@ -159,6 +159,8 @@ class RevieweeContainer extends Component {
               customFields={props.review.customFields}
               customValues={props.review.customValues}
               onChangeCustomValue={props.onChangeCustomValue}
+              onGoToPage={props.onGoToPage}
+              onSelectFile={this.onSelectFile}
               />
           ) : null
     return (
@@ -188,7 +190,8 @@ class RevieweeContainer extends Component {
     pdf: PropTypes.object,
     fileObject: PropTypes.array,
     onRemoveReviewer: PropTypes.func.isRequired,
-    onChangeCustomValue: PropTypes.func.isRequired
+    onChangeCustomValue: PropTypes.func,
+    onGoToPage: PropTypes.func
   }
 }
 
@@ -239,6 +242,12 @@ const connector = connect(
             file: file
           })
         }
+      },
+      onGoToPage: (page) => {
+        dispatch({
+          type: 'PDF/GO_PAGE',
+          page: page
+        })
       },
       dispatch
     }

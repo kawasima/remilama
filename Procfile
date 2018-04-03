@@ -1,1 +1,1 @@
-webpack: yarn run production
+web: yarn run production

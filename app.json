@@ -1,0 +1,10 @@
+{
+  "name": "remilama",
+  "description": "A tool for reviewing documents",
+  "keywords": [
+    "Review",
+    "WebRTC"
+  ],
+  "website": "https://github.com/kawasima/remilama",
+  "repository": "https://github.com/kawasima/remilama.git"
+}

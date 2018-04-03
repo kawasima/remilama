@@ -24,7 +24,6 @@ class ReviewerContainer extends React.Component {
     const props = this.props
     const peer = new Peer({
       host: '/',
-      port: 9000,
       path: '/peerjs',
       // Set highest debug level (log everything!).
       debug: 3,

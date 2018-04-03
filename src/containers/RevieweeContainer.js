@@ -21,7 +21,6 @@ class RevieweeContainer extends Component {
   createPeer(props) {
     this.peer = new Peer(props.review.id, {
       host: '/',
-      port: 9000,
       path: '/peerjs',
       debug: 3,
     })

@@ -141,7 +141,7 @@ class RevieweeContainer extends Component {
   render() {
     const props = this.props
 
-    const documentView = isArrayBuffer(props.reviewer.file.blob) ? (
+    const documentView = isArrayBuffer(props.reviewer.file && props.reviewer.file.blob) ? (
       <PdfContainer {...props.pdf}
                     review={props.review}
                     filename={props.reviewer.file.name}

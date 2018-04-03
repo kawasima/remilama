@@ -145,7 +145,7 @@ class ReviewerContainer extends React.Component {
 
   render() {
     const { review, reviewer, pdf } = this.props
-    const documentView = (isArrayBuffer(reviewer.file.blob)) ? (
+    const documentView = (isArrayBuffer(reviewer.file && reviewer.file.blob)) ? (
       <PdfContainer {...pdf}
                     review={{
                       ...review,

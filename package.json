@@ -21,7 +21,7 @@
     "test": "jest",
     "test:watch": "yarn run test -o --watch",
     "build": "webpack --config webpack.config.production.js",
-    "production": "node node_modules/cross-env/dist/bin/cross-env.js NODE_ENV=production node app.js"
+    "production": "node app.js"
   },
   "author": "kawasima",
   "license": "MIT",

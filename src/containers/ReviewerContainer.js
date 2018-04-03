@@ -122,7 +122,7 @@ class ReviewerContainer extends React.Component {
   }
 
   onMoveComment = ({id, x, y}) => {
-    const { dataConnection } = this.props.reviewer
+    const { dataConnection } = this.state
 
     dataConnection.send({
       type: 'REVIEW/UPDATE_COMMENT',

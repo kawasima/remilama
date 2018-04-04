@@ -32,4 +32,6 @@ app.get('*', function (req, res) {
   res.sendFile(path.join(__dirname, 'public', 'index.html'))
 })
 
-server.listen(port)
+server.listen(port, function() {
+  console.log('Start server: port=' + port)
+})

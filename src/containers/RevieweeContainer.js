@@ -8,6 +8,7 @@ import PdfContainer from '../containers/PdfContainer'
 import Review from '../components/Review'
 import Reviewer from '../components/Reviewer'
 import ReviewCommentTable from '../components/ReviewCommentTable'
+import detectPort from '../utils/detectPort'
 
 class RevieweeContainer extends Component {
   state = {
@@ -21,6 +22,7 @@ class RevieweeContainer extends Component {
   createPeer(props) {
     this.peer = new Peer(props.review.id, {
       host: '/',
+      port: detectPort(window.location),
       path: '/peerjs',
       debug: 3,
     })

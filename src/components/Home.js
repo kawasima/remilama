@@ -66,7 +66,7 @@ export default ({onNewReview, onJoinReview}) => (
 
     <div className="eight wide column">
       <div className="ui raised segment">
-        <div className="ui header">Reviewer</div>
+        <div className="ui header">Reviewee</div>
         <div className="description">
           Create a review
           <div>
@@ -77,7 +77,7 @@ export default ({onNewReview, onJoinReview}) => (
     </div>
     <div className="eight wide column">
       <div className="ui raised segment">
-        <div className="ui header">Reviewee</div>
+        <div className="ui header">Reviewer</div>
         <div className="description">
           <Form
             onSubmit={onJoinReview}

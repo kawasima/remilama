@@ -6,6 +6,7 @@ import isArrayBuffer from 'is-array-buffer'
 import Review from '../components/Review'
 import PdfContainer from '../containers/PdfContainer'
 import Peer from 'peerjs'
+import detectPort from '../utils/detectPort'
 
 class ReviewerContainer extends React.Component {
   static propTypes = {
@@ -25,6 +26,7 @@ class ReviewerContainer extends React.Component {
     const peer = new Peer({
       host: '/',
       path: '/peerjs',
+      port: detectPort(window.location),
       // Set highest debug level (log everything!).
       debug: 3,
     })

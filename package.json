@@ -27,17 +27,29 @@
   "license": "MIT",
   "babel": {
     "presets": [
-      ["@babel/preset-env", {
-        "targets": {
-          "browsers": ["last 2 versions", "safari >= 7"]
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "browsers": [
+              "last 2 versions",
+              "safari >= 7"
+            ]
+          }
         }
-      }]
+      ]
     ],
     "plugins": [
       "@babel/plugin-transform-react-jsx",
       "@babel/plugin-transform-async-to-generator",
       "@babel/plugin-syntax-dynamic-import",
-      ["@babel/plugin-proposal-object-rest-spread", { "loose": true, "useBuiltIns": true }],
+      [
+        "@babel/plugin-proposal-object-rest-spread",
+        {
+          "loose": true,
+          "useBuiltIns": true
+        }
+      ],
       "@babel/plugin-proposal-class-properties"
     ],
     "env": {
@@ -49,12 +61,14 @@
     }
   },
   "dependencies": {
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
     "express": "^4.16.3",
     "final-form": "^4.3.1",
     "handsontable": "^0.38.1",
     "is-array-buffer": "^1.0.0",
+    "optimist": "^0.6.1",
     "pdfjs-dist": "^2.0.428",
-    "peer": "^0.2.8",
     "peerjs": "^0.3.14",
     "react": "^16.3.0-rc.0",
     "react-dnd": "^2.5.4",
@@ -69,14 +83,15 @@
     "redux-logger": "^3.0.6",
     "redux-persist": "^5.9.1",
     "redux-promise": "^0.5.3",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "ws": "^5.1.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.44",
     "@babel/core": "^7.0.0-beta.44",
     "@babel/plugin-proposal-class-properties": "^7.0.0-beta.44",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0-beta.44",
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.44",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0-beta.44",
     "@babel/plugin-transform-async-to-generator": "^7.0.0-beta.44",
     "@babel/plugin-transform-react-jsx": "^7.0.0-beta.44",
     "@babel/plugin-transform-runtime": "^7.0.0-beta.44",

@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import uuidv4 from 'uuid/v4'
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 import SelectReviewFile from './SelectReviewFile'
 
 const renderFile = ({file, onReSelectFile, onSelectFile, isReviewee}) => {
@@ -44,7 +45,11 @@ const Review = ({
   return (
     <div className="ui segment">
       <p>Review: {name} ({id})</p>
-
+      <p>Review URL: {location.protocol + '//' + location.host + '/review/' + id + '/reviewer'}
+        <CopyToClipboard text={location.protocol + '//' + location.host + '/review/' + id + '/reviewer'}>
+          <i className="icon copy" title="copy" style={{cursor: "pointer"}} />
+        </CopyToClipboard>
+      </p>
       <div>
         {fileList}
       </div>

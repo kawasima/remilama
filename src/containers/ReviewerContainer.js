@@ -6,22 +6,33 @@ import isArrayBuffer from 'is-array-buffer'
 import Review from '../components/Review'
 import PdfContainer from '../containers/PdfContainer'
 import Peer from 'peerjs'
+import Modal from '../components/Modal'
+import { Form, Field } from 'react-final-form'
+import ReviewerNameField from '../components/ReviewerNameField'
+import { required, composeValidators, mustBeUUID } from '../validators'
 
 class ReviewerContainer extends React.Component {
   static propTypes = {
     onConnectReview: PropTypes.func.isRequired,
     review: PropTypes.object.isRequired,
     reviewer: PropTypes.object.isRequired,
-    pdf: PropTypes.object
+    pdf: PropTypes.object,
+    onJoinReview: PropTypes.func
   }
 
   state = {
     peer: null,
-    dataConnection: null
+    dataConnection: null,
+    review_id: null
   }
 
   componentDidMount() {
     const props = this.props
+
+    this.setState({
+      review_id: props.match.params.id
+    })
+
     const peer = new Peer({
       host: '/',
       path: '/peerjs',
@@ -142,8 +153,26 @@ class ReviewerContainer extends React.Component {
     })
   }
 
+  renderJoinForm = ({ handleSubmit, pristine, invalid }) => (
+    <form className="ui form" onSubmit={handleSubmit}>
+      <div className="fields">
+        <Field component="input" name="review_id"
+               validate={composeValidators(required, mustBeUUID)}
+               type="hidden" value={this.state.review_id}>
+        </Field>
+        <ReviewerNameField />
+        <div className="field">
+          <label>&nbsp;</label>
+          <button type="submit"
+                  className="ui primary button"
+                  disabled={pristine || invalid}>Join</button>
+        </div>
+      </div>
+    </form>
+  )
+
   render() {
-    const { review, reviewer, pdf } = this.props
+    const { review, reviewer, pdf, onJoinReview } = this.props
     const documentView = (isArrayBuffer(reviewer.file && reviewer.file.blob)) ? (
       <PdfContainer {...pdf}
                     review={{
@@ -159,6 +188,17 @@ class ReviewerContainer extends React.Component {
                     onPageClick={this.onPostComment}
         />
     ) : null
+    const reviewerModalView = (this.state.review_id !== reviewer.reviewId) ? (
+      <Modal modalIsOpen="true">
+        <div className="header">{this.state.review_id}</div>
+        <div className="content">
+          <Form
+              initialValues={this.state}
+              onSubmit={onJoinReview}
+              render={this.renderJoinForm}/>
+        </div>
+      </Modal>
+    ) : null
     return (
       <div className="ui segment">
         <h2 className="ui header">
@@ -170,6 +210,7 @@ class ReviewerContainer extends React.Component {
         <Review {...review}
                 onSelectFile={this.onSelectFile}/>
           {documentView}
+          {reviewerModalView}
       </div>
     )
   }
@@ -202,6 +243,17 @@ const connector = connect(
           type: 'REVIEW/UPDATE_COMMENTS',
           comments
         })
+      },
+      onJoinReview: (values, form, cb) => {
+        dispatch({
+          type: 'JOIN_REVIEW',
+          reviewId: values.review_id,
+          reviewer: {
+            id: uuidv4(),
+            name: values.reviewer_name
+          }
+        })
+        window.location.reload()
       },
     }
   }

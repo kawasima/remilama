@@ -189,7 +189,7 @@ class ReviewerContainer extends React.Component {
         />
     ) : null
     const reviewerModalView = (this.state.review_id !== reviewer.reviewId) ? (
-      <Modal modalIsOpen="true">
+      <Modal modalIsOpen={true}>
         <div className="header">{this.state.review_id}</div>
         <div className="content">
           <Form

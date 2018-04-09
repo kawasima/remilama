@@ -4,6 +4,18 @@ import uuidv4 from 'uuid/v4'
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import SelectReviewFile from './SelectReviewFile'
 
+const copiedPopup = () => (
+  <div className="ui popup bottom right inverted transition visible"
+       style={
+         {
+           display: "block",
+           marginTop: "25px"
+         }
+       }>
+    <div className="content">Copied</div>
+  </div>
+)
+
 const renderFile = ({file, onReSelectFile, onSelectFile, isReviewee}) => {
   const filelink = (!(file.object) && isReviewee) ?
         (
@@ -26,35 +38,57 @@ const renderFile = ({file, onReSelectFile, onSelectFile, isReviewee}) => {
   )
 }
 
-const Review = ({
-  id, name, files, fileObject,
-  onReSelectFile, onSelectFile,
-  isReviewee
-}) => {
-  const fileList = (
-    <ul>
-      {
-        files.map(file => {
-          file.object = (fileObject || []).find(f => f.name === file.name)
-          return renderFile({file, onSelectFile, onReSelectFile, isReviewee})
-        })
-      }
-    </ul>
-  )
+class Review extends React.Component {
+  state = {
+    isCopying: false
+  }
 
-  return (
-    <div className="ui segment">
-      <p>Review: {name} ({id})</p>
-      <p>Review URL: {location.protocol + '//' + location.host + '/review/' + id + '/reviewer'}
-        <CopyToClipboard text={location.protocol + '//' + location.host + '/review/' + id + '/reviewer'}>
-          <i className="icon copy" title="copy" style={{cursor: "pointer"}} />
-        </CopyToClipboard>
-      </p>
-      <div>
-        {fileList}
+  onCopy = () => {
+    this.setState({isCopying: true})
+    setTimeout(() => {
+      this.setState({isCopying: false})
+    }, 2000)
+  }
+
+  render() {
+      const {
+        id, name, files, fileObject,
+        onReSelectFile, onSelectFile,
+        isReviewee
+      } = this.props
+
+    const fileList = (
+      <ul>
+        {
+          files.map(file => {
+            file.object = (fileObject || []).find(f => f.name === file.name)
+            return renderFile({file, onSelectFile, onReSelectFile, isReviewee})
+          })
+        }
+      </ul>
+    )
+
+    const popup = this.state.isCopying ? copiedPopup() : null
+    const reviewerUrl = `${location.origin}/review/${id}/reviewer`
+    return (
+      <div className="ui segment">
+        <p>Review: {name} ({id})</p>
+        <p>Review URL: {reviewerUrl}
+          <CopyToClipboard text={reviewerUrl}
+                           onCopy={this.onCopy}>
+            <span style={{position: "relative"}}>
+              <i className="icon copy" title="copy" style={{cursor: "pointer"}} />
+              {popup}
+            </span>
+          </CopyToClipboard>
+
+        </p>
+        <div>
+          {fileList}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 }
 
 Review.propTypes = {

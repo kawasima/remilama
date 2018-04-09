@@ -10,6 +10,7 @@ import Modal from '../components/Modal'
 import { Form, Field } from 'react-final-form'
 import ReviewerNameField from '../components/ReviewerNameField'
 import { required, composeValidators, mustBeUUID } from '../validators'
+import detectPort from '../utils/detectPort'
 
 class ReviewerContainer extends React.Component {
   static propTypes = {
@@ -36,6 +37,7 @@ class ReviewerContainer extends React.Component {
     const peer = new Peer({
       host: '/',
       path: '/peerjs',
+      port: detectPort(window.location),
       // Set highest debug level (log everything!).
       debug: 3,
     })

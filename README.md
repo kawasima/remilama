@@ -16,10 +16,36 @@ Running remilama locally
 % yarn production
 ```
 
-## For development
+### For development
 
 Run remilama in the development mode.
 
 ```
 % yarn start
+```
+
+## Customization
+
+### Add custom fields
+
+You can add custom fields to a comment. When you create a review, set a file such as the following.
+
+```json
+[
+  {
+    "id": "solutions",
+    "label": "Solutions",
+    "type": "text"
+  },
+  {
+    "id": "cause",
+    "label": "Cause",
+    "type": "dropdown",
+    "source": [
+      "Carelessly",
+      "Misunderstood",
+      "Intentional"
+    ]
+  }
+]
 ```

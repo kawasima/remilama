@@ -39,11 +39,14 @@ class PdfDocument extends React.Component {
   static defaultProps = {
     page: 1,
     scale: 1.0,
-    fillWidth: false,
-    fillHeight: false
+    fillWidth: true,
+    fillHeight: true
   }
 
-  state = {}
+  state = {
+    page: null
+  }
+
   static defaultBinaryToBase64(arrayBuffer) {
     let base64 = ''
     const encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'

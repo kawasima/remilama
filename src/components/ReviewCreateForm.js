@@ -2,7 +2,8 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Form, Field } from 'react-final-form'
 import SelectReviewFile from './SelectReviewFile'
-import CustomCommentField from './CustomCommentField'
+import CustomCommentFieldUpload from './CustomCommentFieldUpload'
+import CustomCommentFields from './CustomCommentFields'
 import { required } from '../validators'
 import uuidv4 from 'uuid/v4'
 
@@ -41,9 +42,13 @@ class AdvancedSettings extends React.Component {
   }
 
   render() {
-    const { onUploadCustomFields } = this.props
+    const { customFields, onUploadCustomFields } = this.props
     const advancedTitleClass = this.state.openAdvanced ? 'title active' : 'title'
     const advancedContentClass = this.state.openAdvanced ? 'content active': 'content'
+    const customCommentFields = customFields.length == 0 ?
+          null
+          :
+          <CustomCommentFields customFields={customFields} />
 
     return (
       <div className="ui accordion">
@@ -53,14 +58,20 @@ class AdvancedSettings extends React.Component {
           <div className={advancedContentClass}>
             <div className="field">
               <label>Custom Fields</label>
-              <CustomCommentField onUploadCustomFields={onUploadCustomFields} />
+              {customCommentFields}
+              <div className="ui bottom attached segment">
+                <CustomCommentFieldUpload onUploadCustomFields={onUploadCustomFields} />
+              </div>
             </div>
           </div>
       </div>
     )
   }
 }
-const renderForm = ({files, onSelectFile, onRemoveFile, onUploadCustomFields}) => {
+const renderForm = ({
+  customFields, files,
+  onSelectFile, onRemoveFile, onUploadCustomFields
+}) => {
   const fileList = files ? (<ul>{files.map(file => reviewFile({file, onRemoveFile}))}</ul>) : null
   return ({ handleSubmit, pristine, invalid }) => (
     <form className="ui form" onSubmit={handleSubmit}>
@@ -76,9 +87,11 @@ const renderForm = ({files, onSelectFile, onRemoveFile, onUploadCustomFields}) =
         <SelectReviewFile onSelectFile={onSelectFile}/>
       </div>
 
-      <AdvancedSettings onUploadCustomFields={onUploadCustomFields}/>
+      <AdvancedSettings onUploadCustomFields={onUploadCustomFields}
+                        customFields={customFields} />
       <button type="submit"
               className="ui primary button"
+              style={{marginTop: "10px"}}
               disabled={pristine || invalid || files.length==0}>Create</button>
     </form>
   )
@@ -94,13 +107,12 @@ class ReviewCreateForm extends React.Component {
   }
 
   render() {
-    const { files, onSelectFile, onCreateReview, onRemoveFile, onUploadCustomFields } = this.props
+    const { onCreateReview } = this.props
     return (
     <div>
       <Form
         onSubmit={onCreateReview}
-        render={renderForm({files, onSelectFile, onRemoveFile, onUploadCustomFields})
-        }
+        render={renderForm(this.props)}
         />
     </div>
     )

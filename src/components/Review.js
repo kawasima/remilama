@@ -1,3 +1,4 @@
+/* globals window*/
 import React from 'react'
 import PropTypes from 'prop-types'
 import uuidv4 from 'uuid/v4'
@@ -45,7 +46,7 @@ class Review extends React.Component {
 
   onCopy = () => {
     this.setState({isCopying: true})
-    setTimeout(() => {
+    window.setTimeout(() => {
       this.setState({isCopying: false})
     }, 2000)
   }
@@ -69,20 +70,19 @@ class Review extends React.Component {
     )
 
     const popup = this.state.isCopying ? copiedPopup() : null
-    const reviewerUrl = `${location.origin}/review/${id}/reviewer`
+    const reviewerUrl = `${window.location.origin}/review/${id}/reviewer`
     return (
       <div className="ui segment">
-        <p>Review: {name} ({id})</p>
-        <p>Review URL: {reviewerUrl}
+        <div>
+          Review: {name} ({id}
           <CopyToClipboard text={reviewerUrl}
                            onCopy={this.onCopy}>
             <span style={{position: "relative"}}>
               <i className="icon copy" title="copy" style={{cursor: "pointer"}} />
               {popup}
             </span>
-          </CopyToClipboard>
-
-        </p>
+          </CopyToClipboard>)
+      </div>
         <div>
           {fileList}
         </div>

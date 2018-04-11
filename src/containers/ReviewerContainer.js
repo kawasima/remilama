@@ -25,7 +25,8 @@ class ReviewerContainer extends React.Component {
     peer: null,
     dataConnection: null,
     isPeerError: false,
-    review_id: null
+    review_id: null,
+    retryCount: 0
   }
 
   componentDidMount() {
@@ -43,13 +44,22 @@ class ReviewerContainer extends React.Component {
       debug: 3,
     })
     peer.on('error', err => {
-      this.setState({isPeerError: true})
       console.error(err.type)
+      this.setState({isPeerError: true})
+      if (this.state.retryCount < 10) {
+        this.setState({retryCount: this.state.retryCount + 1})
+        const dataConnection1 = peer.connect(props.reviewer.reviewId)
+        dataConnection1.on('open', () => {
+          this.setState({
+            isPeerError: false,
+            dataConnection: dataConnection1,
+          })
+        })
+      }
     })
 
     const dataConnection = peer.connect(props.reviewer.reviewId)
     dataConnection.on('data', message => {
-      this.setState({isPeerError: false})
       switch(message.type) {
       case 'REVIEW_INFO':
         dataConnection.send({
@@ -68,9 +78,6 @@ class ReviewerContainer extends React.Component {
         props.onUpdateComments(message.comments)
         break
       }
-    })
-    dataConnection.on('close', () =>{
-      this.setState({isPeerError: true})
     })
     dataConnection.on('error', err => {
       console.error(err)

@@ -24,7 +24,9 @@ class ReviewerContainer extends React.Component {
   state = {
     peer: null,
     dataConnection: null,
-    review_id: null
+    isPeerError: false,
+    review_id: null,
+    retryCount: 0
   }
 
   componentDidMount() {
@@ -43,6 +45,17 @@ class ReviewerContainer extends React.Component {
     })
     peer.on('error', err => {
       console.error(err.type)
+      this.setState({isPeerError: true})
+      if (this.state.retryCount < 10) {
+        this.setState({retryCount: this.state.retryCount + 1})
+        const dataConnection1 = peer.connect(props.reviewer.reviewId)
+        dataConnection1.on('open', () => {
+          this.setState({
+            isPeerError: false,
+            dataConnection: dataConnection1,
+          })
+        })
+      }
     })
 
     const dataConnection = peer.connect(props.reviewer.reviewId)
@@ -201,6 +214,11 @@ class ReviewerContainer extends React.Component {
         </div>
       </Modal>
     ) : null
+    const errorView = (this.state.isPeerError === true) ? (
+      <div className="ui negative message">
+        <p>Connection disconnected.</p>
+      </div>
+    ) : null
     return (
       <div className="ui segment">
         <h2 className="ui header">
@@ -209,6 +227,7 @@ class ReviewerContainer extends React.Component {
             Review
           </div>
         </h2>
+        {errorView}
         <Review {...review}
                 onSelectFile={this.onSelectFile}/>
           {documentView}

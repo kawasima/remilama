@@ -1,3 +1,6 @@
+import { handleActions } from 'redux-actions'
+import * as Actions from '../actions/review-actions'
+
 const initialState = {
   id: null,
   name: null,
@@ -8,105 +11,111 @@ const initialState = {
   customValues: {}
 }
 
-export default (state = initialState, action) => {
-  switch (action.type) {
-  case 'REVIEW/CREATE_REVIEW':
-    return { ...state, ...action.review }
-  case 'REVIEW/INITIALIZE':
-    return initialState
-  case 'REVIEW/ADD_REVIEW_FILE':
+export default handleActions({
+  [Actions.reviewCreated]: (state, action) => {
+    return { ...state, ...action.payload.review }
+  },
+  [Actions.reviewInitialized]: () => initialState,
+  [Actions.reviewFileAdded]: (state, action) => {
     return {
       ...state,
-      files: [ ...state.files, action.file ]
-    }
-  case 'REVIEW/REMOVE_REVIEW_FILE':
-    return {
-      ...state,
-      files: state.files.filter(f => f.name !== action.filename)
-    }
-  case 'REVIEW/ADD_REVIEWER':
-    if (!state.reviewers.find(reviewer => reviewer.id === action.id)) {
+      files: [ ...state.files, action.payload.file ]}
+  },
+  [Actions.reviewFileRemoved]: (state, action) => {
+    return {...state,
+            files: state.files.filter(f => f.name !== action.payload.filename)}
+  },
+  [Actions.reviewReviewerAdded]: (state, action) => {
+    if (!state.reviewers.find(reviewer => reviewer.id === action.payload.id)) {
       return {
         ...state,
         reviewers: [
           ...state.reviewers,
           {
-            id: action.id,
-            name: action.name
+            id: action.payload.id,
+            name: action.payload.name
           }
         ]
       }
     } else {
       return state
     }
-  case 'REVIEW/REMOVE_REVIEWER':
+  },
+  [Actions.reviewReviewerRemoved]: (state, action) => {
     return {
       ...state,
-      reviewers: state.reviewers.filter(reviewer => reviewer.id !== action.reviewerId)
+      reviewers: state.reviewers.filter(reviewer => reviewer.id !== action.payload.reviewerId)
     }
-  case 'UPDATE_REVIEWER':
+  },
+  [Actions.reviewReviewerUpdated]: (state, action) => {
     return {
       ...state,
       reviewers: state.reviewers.map(reviewer => {
-        if (reviewer.id === action.reviewer.id) {
-          return { ...reviewer, ...action.reviewer }
+        if (reviewer.id === action.payload.reviewer.id) {
+          return { ...reviewer, ...action.payload.reviewer }
         } else {
           return reviewer
         }
       })
     }
-  case 'REVIEW/UPDATE_COMMENTS':
+  },
+  [Actions.reviewCommentsUpdated]: (state, action) => {
     return {
       ...state,
-      comments: action.comments
+      comments: action.payload.comments
     }
-  case 'REVIEW/ADD_COMMENT':
+  },
+  [Actions.reviewCommentAdded]: (state, action) => {
     return {
       ...state,
       comments: [...state.comments,
                  {
-                   id: action.id,
-                   filename: action.filename,
-                   postedBy: action.postedBy,
-                   postedAt: action.postedAt,
-                   page: action.page,
-                   x: action.x,
-                   y: action.y,
+                   id: action.payload.id,
+                   filename: action.payload.filename,
+                   postedBy: action.payload.postedBy,
+                   postedAt: action.payload.postedAt,
+                   page: action.payload.page,
+                   x: action.payload.x,
+                   y: action.payload.y,
                    description: ''
                  }]
       }
-  case 'REVIEW/UPDATE_COMMENT':
+  },
+  [Actions.reviewCommentUpdated]: (state, action) => {
     return {
       ...state,
       comments: state.comments
-          .map(comment => comment.id === action.id ?
-               { ...comment, ...action.changes }
+          .map(comment => comment.id === action.payload.id ?
+               { ...comment, ...action.payload.changes }
                :
                comment)
     }
-  case 'REVIEW/REMOVE_COMMENT':
+  },
+  [Actions.reviewCommentRemoved]: (state, action) => {
     return {
       ...state,
-      comments: state.comments.filter(comment => comment.id !== action.id)
+      comments: state.comments.filter(comment => comment.id !== action.payload.id)
     }
-  case 'REVIEW/SET_CUSTOM_FIELDS':
+  },
+  [Actions.reviewCustomFieldsSet]: (state, action) => {
     return {
       ...state,
-      customFields: action.customFields
+      customFields: action.payload.customFields
     }
-  case 'REVIEW/SET_CUSTOM_VALUE':
+  },
+  [Actions.reviewCustomValueSet]: (state, action) => {
     return {
       ...state,
       customValues: {...state.customValues,
-                     [action.commentId]: {
-                       ...state.customValues[action.commentId],
-                       [action.customFieldId]: action.value
+                     [action.payload.commentId]: {
+                       ...state.customValues[action.payload.commentId],
+                       [action.payload.customFieldId]: action.payload.value
                      }
                     }
     }
-  default:
+  },
+  [Actions.reviewConnectFail]: (state, action) => {
+    console.error('CONNECT FAIL!!!!!!!')
     return state
   }
-
-
-}
+}, initialState)

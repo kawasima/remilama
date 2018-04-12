@@ -4,10 +4,12 @@ import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 
-import { store, persistor } from './store'
+import store, { persistor, runSaga } from './store'
+import rootSaga from './sagas'
 import App from './components/App'
 
 const root = document.querySelector('#root')
+runSaga(rootSaga)
 
 if (process.env.NODE_ENV === 'production') {
   ReactDOM.render(

@@ -5,20 +5,18 @@ import uuidv4 from 'uuid/v4'
 import isArrayBuffer from 'is-array-buffer'
 import Review from '../components/Review'
 import PdfContainer from '../containers/PdfContainer'
-import Peer from 'peerjs'
 import Modal from '../components/Modal'
 import { Form, Field } from 'react-final-form'
 import ReviewerNameField from '../components/ReviewerNameField'
 import { required, composeValidators, mustBeUUID } from '../validators'
 import detectPort from '../utils/detectPort'
+import reviewActions from '../actions/review-actions'
 
 class ReviewerContainer extends React.Component {
   static propTypes = {
-    onConnectReview: PropTypes.func.isRequired,
     review: PropTypes.object.isRequired,
     reviewer: PropTypes.object.isRequired,
     pdf: PropTypes.object,
-    onJoinReview: PropTypes.func
   }
 
   state = {
@@ -33,43 +31,10 @@ class ReviewerContainer extends React.Component {
     this.setState({
       review_id: props.match.params.id
     })
-
-    const peer = new Peer({
-      host: '/',
-      path: '/peerjs',
+    props.dispatch(reviewActions.startReviewer({
       port: detectPort(window.location),
-      // Set highest debug level (log everything!).
-      debug: 3,
-    })
-    peer.on('error', err => {
-      console.error(err.type)
-    })
-
-    const dataConnection = peer.connect(props.reviewer.reviewId)
-    dataConnection.on('data', message => {
-      switch(message.type) {
-      case 'REVIEW_INFO':
-        dataConnection.send({
-          type: 'REVIEWER',
-          reviewer: {
-            id: props.reviewer.id,
-            name: props.reviewer.name
-          }
-        })
-        props.onConnectReview(message.review)
-        break
-      case 'FILE_RESPONSE':
-        props.onReceiveFile(message.file)
-        break
-      case 'REVIEW/UPDATE_COMMENTS':
-        props.onUpdateComments(message.comments)
-        break
-      }
-    })
-    dataConnection.on('error', err => {
-      console.error(err)
-    })
-    this.setState({peer, dataConnection})
+      reviewId: props.match.params.id
+    }))
   }
 
   componentWillUnmount() {
@@ -81,33 +46,26 @@ class ReviewerContainer extends React.Component {
   }
 
   onPageComplete = page => {
-    const { reviewer, pdf }  = this.props
-    const { dataConnection } = this.state
-
-    dataConnection.send({
-      type: 'UPDATE_REVIEWER',
+    const { reviewer, pdf, dispatch }  = this.props
+    dispatch(reviewActions.reviewerUpdated({
       reviewer: {
-
         id: reviewer.id,
         action: `Show the ${pdf.page} page on ${reviewer.file.name}`
       }
-    })
+    }))
   }
 
   onSelectFile = filename => {
-    const { dataConnection } = this.state
-    dataConnection.send({
-      type: 'FILE_REQUEST',
+    const { dispatch } = this.props
+    dispatch(reviewActions.reviewFileRequest({
       filename: filename
-    })
+    }))
   }
 
   onPostComment = (filename, page, x, y, scale) => {
-    const { reviewer } = this.props
-    const { dataConnection } = this.state
+    const { reviewer, dispatch } = this.props
 
-    dataConnection.send({
-      type: 'REVIEW/ADD_COMMENT',
+    dispatch(reviewActions.reviewCommentAddRequest({
       id: uuidv4(),
       postedAt: new Date().getTime(),
       postedBy: {
@@ -118,41 +76,38 @@ class ReviewerContainer extends React.Component {
       y: y / scale,
       page: page,
       filename: filename
-    })
+    }))
   }
 
   onUpdateComment = (id, description) => {
-    const { dataConnection } = this.state
+    const { dispatch } = this.props
 
-    dataConnection.send({
-      type: 'REVIEW/UPDATE_COMMENT',
+    dispatch(reviewActions.reviewCommentUpdateRequest({
       id: id,
       changes: {
         description: description
       }
-    })
+    }))
   }
 
   onMoveComment = ({id, x, y}) => {
-    const { dataConnection } = this.state
+    const { dispatch } = this.props
 
-    dataConnection.send({
-      type: 'REVIEW/UPDATE_COMMENT',
+    dispatch(reviewActions.reviewCommentUpdateRequest({
       id: id,
       changes: {
         x: x,
         y: y
       }
-    })
+    }))
   }
 
   onDeleteComment = (id) => {
-    const { dataConnection } = this.state
+    const { dispatch } = this.props
 
-    dataConnection.send({
-      type: 'REVIEW/REMOVE_COMMENT',
+    dispatch(reviewActions.reviewCommentRemoveRequest({
       id: id
-    })
+    }))
   }
 
   renderJoinForm = ({ handleSubmit, pristine, invalid }) => (
@@ -174,7 +129,7 @@ class ReviewerContainer extends React.Component {
   )
 
   render() {
-    const { review, reviewer, pdf, onJoinReview } = this.props
+    const { review, reviewer, pdf, dispatch } = this.props
     const documentView = (isArrayBuffer(reviewer.file && reviewer.file.blob)) ? (
       <PdfContainer {...pdf}
                     review={{
@@ -195,9 +150,15 @@ class ReviewerContainer extends React.Component {
         <div className="header">{this.state.review_id}</div>
         <div className="content">
           <Form
-              initialValues={this.state}
-              onSubmit={onJoinReview}
-              render={this.renderJoinForm}/>
+            initialValues={this.state}
+            onSubmit={(values) => dispatch(reviewActions.reviewJoin({
+              reviewId: values.review_id,
+              reviewer: {
+                id: uuidv4(),
+                name: values.reviewer_name
+              }
+            }))}
+            render={this.renderJoinForm}/>
         </div>
       </Modal>
     ) : null
@@ -226,38 +187,6 @@ const connector = connect(
       pdf
     }
   },
-  (dispatch) => {
-    return {
-      onConnectReview: (review) => {
-        dispatch({
-          type: 'REVIEW/CREATE_REVIEW',
-          review
-        })
-      },
-      onReceiveFile: (file) => {
-        dispatch({
-          type: 'REVIEWER/SHOW_FILE',
-          file: file
-        })
-      },
-      onUpdateComments: comments => {
-        dispatch({
-          type: 'REVIEW/UPDATE_COMMENTS',
-          comments
-        })
-      },
-      onJoinReview: (values, form, cb) => {
-        dispatch({
-          type: 'JOIN_REVIEW',
-          reviewId: values.review_id,
-          reviewer: {
-            id: uuidv4(),
-            name: values.reviewer_name
-          }
-        })
-        window.location.reload()
-      },
-    }
-  }
+  dispatch => { return { dispatch }}
 )
 export default connector(ReviewerContainer)

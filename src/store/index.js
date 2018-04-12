@@ -5,7 +5,7 @@ import promiseMiddleware from 'redux-promise'
 import { createLogger } from 'redux-logger'
 import { createBrowserHistory } from 'history'
 import { syncHistoryWithStore, routerReducer, routerMiddleware } from 'react-router-redux'
-
+import createSagaMiddleware from 'redux-saga'
 import reducer from '../reducers'
 
 const persistConfig = {
@@ -15,17 +15,20 @@ const persistConfig = {
 }
 
 const browserHistory = createBrowserHistory()
+
 const persistedReducer = persistReducer(persistConfig, reducer)
+
+const sagaMiddleware = createSagaMiddleware();
+
 const store = createStore(
   persistedReducer,
   applyMiddleware(
+    sagaMiddleware,
     routerMiddleware(browserHistory),
     promiseMiddleware,
     createLogger()))
 
-const persistor = persistStore(store)
+export const persistor = persistStore(store)
+export const runSaga = sagaMiddleware.run
 
-export {
-  store,
-  persistor
-}
+export default store

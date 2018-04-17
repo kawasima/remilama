@@ -6,6 +6,7 @@ import isArrayBuffer from 'is-array-buffer'
 import Review from '../components/Review'
 import PdfContainer from '../containers/PdfContainer'
 import Modal from '../components/Modal'
+import Loading from '../components/Loading'
 import { Form, Field } from 'react-final-form'
 import ReviewerNameField from '../components/ReviewerNameField'
 import { required, composeValidators, mustBeUUID } from '../validators'
@@ -19,18 +20,9 @@ class ReviewerContainer extends React.Component {
     pdf: PropTypes.object,
   }
 
-  state = {
-    peer: null,
-    dataConnection: null,
-    review_id: null
-  }
-
   componentDidMount() {
     const props = this.props
 
-    this.setState({
-      review_id: props.match.params.id
-    })
     props.dispatch(reviewActions.startReviewer({
       port: detectPort(window.location),
       reviewId: props.match.params.id
@@ -38,16 +30,11 @@ class ReviewerContainer extends React.Component {
   }
 
   componentWillUnmount() {
-    const { peer } = this.state
-    if (peer) {
-      peer.disconnect()
-      peer.destroy()
-    }
   }
 
   onPageComplete = page => {
     const { reviewer, pdf, dispatch }  = this.props
-    dispatch(reviewActions.reviewerUpdated({
+    dispatch(reviewActions.reviewReviewerUpdateRequest({
       reviewer: {
         id: reviewer.id,
         action: `Show the ${pdf.page} page on ${reviewer.file.name}`
@@ -110,23 +97,26 @@ class ReviewerContainer extends React.Component {
     }))
   }
 
-  renderJoinForm = ({ handleSubmit, pristine, invalid }) => (
-    <form className="ui form" onSubmit={handleSubmit}>
-      <div className="fields">
-        <Field component="input" name="review_id"
-               validate={composeValidators(required, mustBeUUID)}
-               type="hidden" value={this.state.review_id}>
-        </Field>
-        <ReviewerNameField />
-        <div className="field">
-          <label>&nbsp;</label>
-          <button type="submit"
-                  className="ui primary button"
-                  disabled={pristine || invalid}>Join</button>
+  renderJoinForm = ({ handleSubmit, pristine, invalid }) => {
+    const { reviewer } = this.props
+    return (
+      <form className="ui form" onSubmit={handleSubmit}>
+        <div className="fields">
+          <Field component="input" name="review_id"
+                 validate={composeValidators(required, mustBeUUID)}
+                 type="hidden" value={reviewer ? reviewer.reviewId : null }>
+          </Field>
+          <ReviewerNameField />
+          <div className="field">
+            <label>&nbsp;</label>
+            <button type="submit"
+                    className="ui primary button"
+                    disabled={pristine || invalid}>Join</button>
+          </div>
         </div>
-      </div>
-    </form>
-  )
+      </form>
+    )
+  }
 
   render() {
     const { review, reviewer, pdf, dispatch } = this.props
@@ -145,13 +135,13 @@ class ReviewerContainer extends React.Component {
                     onPageClick={this.onPostComment}
         />
     ) : null
-    const reviewerModalView = (this.state.review_id !== reviewer.reviewId) ? (
+    const reviewerModalView = (reviewer && reviewer.reviewId !== reviewer.reviewId) ? (
       <Modal modalIsOpen={true}>
-        <div className="header">{this.state.review_id}</div>
+        <div className="header">{reviewer ? reviewer.reviewId : null}</div>
         <div className="content">
           <Form
-            initialValues={this.state}
-            onSubmit={(values) => dispatch(reviewActions.reviewJoin({
+            initialValues={{}}
+            onSubmit={(values) => dispatch(reviewActions.reviewJoinRequest({
               reviewId: values.review_id,
               reviewer: {
                 id: uuidv4(),
@@ -162,6 +152,7 @@ class ReviewerContainer extends React.Component {
         </div>
       </Modal>
     ) : null
+
     return (
       <div className="ui segment">
         <h2 className="ui header">
@@ -170,10 +161,11 @@ class ReviewerContainer extends React.Component {
             Review
           </div>
         </h2>
+        <Loading connected={reviewer.connected}/>
         <Review {...review}
                 onSelectFile={this.onSelectFile}/>
-          {documentView}
-          {reviewerModalView}
+        {documentView}
+        {reviewerModalView}
       </div>
     )
   }

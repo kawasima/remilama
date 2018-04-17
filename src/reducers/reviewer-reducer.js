@@ -1,18 +1,33 @@
-export default (state = {}, action) => {
-  switch (action.type) {
-  case 'JOIN_REVIEW':
-    return {
-      ...state,
-      reviewId: action.reviewId,
-      id: action.reviewer.id,
-      name: action.reviewer.name,
-    }
-  case 'REVIEWER/SHOW_FILE':
-    return {
-      ...state,
-      file: action.file
-    }
-  default:
-    return state
-  }
+import { handleActions } from 'redux-actions'
+import actions from '../actions/reviewer-actions'
+
+const initialState = {
+  reviewId: null,
+  id: null,
+  name: null,
+  file: null,
+  connected: false
 }
+
+export default handleActions({
+  [actions.reviewerJoin]: (state, action) => {
+    return {
+      ...state,
+      reviewId: action.payload.reviewId,
+      id: action.payload.reviewer.id,
+      name: action.payload.reviewer.name,
+    }
+  },
+  [actions.reviewerConnectFail]: (state, action) => {
+    return { ...state, connected: false }
+  },
+  [actions.reviewerConnected]: (state, action) => {
+    return { ...state, connected: true }
+  },
+  [actions.reviewerShowFile]: (state, action) => {
+    return {
+      ...state,
+      file: action.payload.file
+    }
+  }
+}, initialState)

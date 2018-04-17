@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import ReviewCreateForm from '../components/ReviewCreateForm'
 import uuidv4 from 'uuid/v4'
+import actions from '../actions/review-actions'
 
 function ReviewCreateFormContainer(props) {
   return (
@@ -25,21 +26,19 @@ const connector = connect(
     return {
       onCreateReview: (values) => {
         const id = uuidv4()
-        dispatch({
-          type: 'REVIEW/CREATE_REVIEW',
+        dispatch(actions.reviewCreated({
           review: {
             id: id,
             name: values.review_name
           }
-        })
+        }))
         props.history.push('/review/' + id)
       },
       onSelectFile: file => {
         if (file) {
-          dispatch({
-            type: 'REVIEW/ADD_REVIEW_FILE',
+          dispatch(actions.reviewFileAdded({
             file: { name: file.name, size: file.size }
-          })
+          }))
           dispatch({
             type: 'FILE_OBJECT/ADD_FILE',
             file: file
@@ -48,10 +47,10 @@ const connector = connect(
       },
       onRemoveFile: filename => {
         if (filename) {
-          dispatch({
-            type: 'REVIEW/REMOVE_REVIEW_FILE',
+          dispatch(actions.reviewFileRemoved({
+            type: 'REVIEW_FILE_REMOVED',
             filename: filename
-          })
+          }))
           dispatch({
             type: 'FILE_OBJECT/REMOVE_FILE',
             filename: filename
@@ -61,10 +60,10 @@ const connector = connect(
       onUploadCustomFields: file => {
         const reader = new FileReader()
         reader.onload = e => {
-          dispatch({
-            type: 'REVIEW/SET_CUSTOM_FIELDS',
+          dispatch(actions.reviewCustomFieldsSet({
+            type: 'REVIEW_CUSTOM_FIELDS_SET',
             customFields: JSON.parse(e.target.result)
-          })
+          }))
         }
         reader.readAsText(file)
       }

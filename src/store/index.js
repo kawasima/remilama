@@ -5,8 +5,10 @@ import promiseMiddleware from 'redux-promise'
 import { createLogger } from 'redux-logger'
 import { createBrowserHistory } from 'history'
 import { syncHistoryWithStore, routerReducer, routerMiddleware } from 'react-router-redux'
+import isEqual from 'lodash/isEqual'
 import createSagaMiddleware from 'redux-saga'
 import reducer from '../reducers'
+import revieweeActions from '../actions/reviewee-actions'
 
 const persistConfig = {
   key: 'review',
@@ -28,6 +30,15 @@ const store = createStore(
     promiseMiddleware,
     createLogger()))
 
+let currentComments = []
+store.subscribe(() => {
+  let prevComments = currentComments
+  currentComments = store.getState().review.comments
+
+  if (!isEqual(currentComments, prevComments)) {
+    store.dispatch(revieweeActions.broadcastToPeers())
+  }
+})
 export const persistor = persistStore(store)
 export const runSaga = sagaMiddleware.run
 

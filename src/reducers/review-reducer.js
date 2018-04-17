@@ -1,5 +1,5 @@
 import { handleActions } from 'redux-actions'
-import * as Actions from '../actions/review-actions'
+import actions from '../actions/review-actions'
 
 const initialState = {
   id: null,
@@ -12,20 +12,26 @@ const initialState = {
 }
 
 export default handleActions({
-  [Actions.reviewCreated]: (state, action) => {
+  [actions.reviewCreated]: (state, action) => {
     return { ...state, ...action.payload.review }
   },
-  [Actions.reviewInitialized]: () => initialState,
-  [Actions.reviewFileAdded]: (state, action) => {
+  [actions.reviewInitialized]: () => initialState,
+  [actions.reviewFileAdded]: (state, action) => {
     return {
       ...state,
       files: [ ...state.files, action.payload.file ]}
   },
-  [Actions.reviewFileRemoved]: (state, action) => {
+  [actions.reviewConnected]: (state, action) => {
+    return { ...state, ...action.payload.review }
+  },
+  [actions.reviewCommentsPropagated]: (state, action) => {
+    return { ...state, comments: action.payload.comments }
+  },
+  [actions.reviewFileRemoved]: (state, action) => {
     return {...state,
             files: state.files.filter(f => f.name !== action.payload.filename)}
   },
-  [Actions.reviewReviewerAdded]: (state, action) => {
+  [actions.reviewReviewerAdded]: (state, action) => {
     if (!state.reviewers.find(reviewer => reviewer.id === action.payload.id)) {
       return {
         ...state,
@@ -41,13 +47,13 @@ export default handleActions({
       return state
     }
   },
-  [Actions.reviewReviewerRemoved]: (state, action) => {
+  [actions.reviewReviewerRemoved]: (state, action) => {
     return {
       ...state,
       reviewers: state.reviewers.filter(reviewer => reviewer.id !== action.payload.reviewerId)
     }
   },
-  [Actions.reviewReviewerUpdated]: (state, action) => {
+  [actions.reviewReviewerUpdated]: (state, action) => {
     return {
       ...state,
       reviewers: state.reviewers.map(reviewer => {
@@ -59,13 +65,13 @@ export default handleActions({
       })
     }
   },
-  [Actions.reviewCommentsUpdated]: (state, action) => {
+  [actions.reviewCommentsUpdated]: (state, action) => {
     return {
       ...state,
       comments: action.payload.comments
     }
   },
-  [Actions.reviewCommentAdded]: (state, action) => {
+  [actions.reviewCommentAdded]: (state, action) => {
     return {
       ...state,
       comments: [...state.comments,
@@ -81,7 +87,7 @@ export default handleActions({
                  }]
       }
   },
-  [Actions.reviewCommentUpdated]: (state, action) => {
+  [actions.reviewCommentUpdated]: (state, action) => {
     return {
       ...state,
       comments: state.comments
@@ -91,19 +97,19 @@ export default handleActions({
                comment)
     }
   },
-  [Actions.reviewCommentRemoved]: (state, action) => {
+  [actions.reviewCommentRemoved]: (state, action) => {
     return {
       ...state,
       comments: state.comments.filter(comment => comment.id !== action.payload.id)
     }
   },
-  [Actions.reviewCustomFieldsSet]: (state, action) => {
+  [actions.reviewCustomFieldsSet]: (state, action) => {
     return {
       ...state,
       customFields: action.payload.customFields
     }
   },
-  [Actions.reviewCustomValueSet]: (state, action) => {
+  [actions.reviewCustomValueSet]: (state, action) => {
     return {
       ...state,
       customValues: {...state.customValues,
@@ -113,9 +119,5 @@ export default handleActions({
                      }
                     }
     }
-  },
-  [Actions.reviewConnectFail]: (state, action) => {
-    console.error('CONNECT FAIL!!!!!!!')
-    return state
   }
 }, initialState)

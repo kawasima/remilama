@@ -3,6 +3,7 @@ import { withRouter } from 'react-router-dom'
 import { connect } from 'react-redux'
 import uuidv4 from 'uuid/v4'
 import Home from '../components/Home'
+import reviewActions from '../actions/review-actions'
 
 function HomeContainer(props) {
   return (
@@ -27,9 +28,7 @@ const connector = connect(
       },
       onNewReview: e => {
         props.history.push('/review/new')
-        dispatch({
-          type: 'REVIEW/INITIALIZE'
-        })
+        dispatch(reviewActions.reviewInitialized())
       }
     }
   }

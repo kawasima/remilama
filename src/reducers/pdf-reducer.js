@@ -1,19 +1,22 @@
+import { handleActions } from 'redux-actions'
+import actions from '../actions/pdf-actions'
+
 const initialState = {
   page: 1,
   scale: 1
 }
 
-export default (state = initialState, action) => {
-  switch (action.type) {
-  case 'PDF/SHOW':
-    return {...state, file: action.file }
-  case 'PDF/GO_PAGE':
-    return {...state, page: action.page }
-  case 'PDF/SET_SCALE':
-    return {...state, scale: action.scale }
-  case 'PDF/SET_NUM_PAGES':
-    return {...state, numPages: action.numPages }
-  default:
-    return state
-  }
-}
+export default handleActions({
+  [actions.pdfShow]: (state, action) => {
+    return {...state, file: action.payload.file }
+  },
+  [actions.pdfPageGo]: (state, action) => {
+    return {...state, page: action.payload.page }
+  },
+  [actions.pdfScaleSet]: (state, action) => {
+    return {...state, scale: action.payload.scale }
+  },
+  [actions.pdfNumPagesSet]: (state, action) => {
+    return {...state, numPages: action.payload.numPages }
+  },
+}, initialState)

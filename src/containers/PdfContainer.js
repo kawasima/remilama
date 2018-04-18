@@ -7,6 +7,7 @@ import PdfDocument from '../components/PdfDocument'
 import ReviewComment from '../components/ReviewComment'
 import SelectReviewFile from '../components/SelectReviewFile'
 import DocumentControls from '../components/DocumentControls'
+import pdfActions from '../actions/pdf-actions.js'
 
 function extractComments(review, reviewer, filename, page, scale) {
   if (!review) return null
@@ -75,46 +76,13 @@ const connector = connect(
 },
   (dispatch, props) => {
     return {
-      onDocumentComplete: numPages => dispatch({
-        type: 'PDF/SET_NUM_PAGES',
-        numPages: numPages
-      }),
-      onSelectFile: file => {
-        dispatch({
-          type: 'PDF/SHOW',
-          file: file
-        })
-      },
-      onNext: (page) => {
-        dispatch({
-          type: 'PDF/GO_PAGE',
-          page: page + 1
-        })
-      },
-      onPrevious: (page) => {
-        dispatch({
-          type: 'PDF/GO_PAGE',
-          page: page - 1
-        })
-      },
-      onGoToPage: (page) => {
-        dispatch({
-          type: 'PDF/GO_PAGE',
-          page: page
-        })
-      },
-      onZoomIn: (scale) => {
-        dispatch({
-          type: 'PDF/SET_SCALE',
-          scale: scale * 1.2
-        })
-      },
-      onZoomOut: (scale) => {
-        dispatch({
-          type: 'PDF/SET_SCALE',
-          scale: scale / 1.2
-        })
-      },
+      onDocumentComplete: numPages => dispatch(pdfActions.pdfNumPagesSet({ numPages })),
+      onSelectFile: file => dispatch(pdfActions.pdfShow({ file })),
+      onNext: page => dispatch(pdfActions.pdfPageGo({ page: page + 1 })),
+      onPrevious: page => dispatch(pdfActions.pdfPageGo({ page: page - 1 })),
+      onGoToPage: page => dispatch(pdfActions.pdfPageGo({ page })),
+      onZoomIn: scale => dispatch(pdfActions.pdfScaleSet({ scale: scale * 1.2 })),
+      onZoomOut: scale => dispatch(pdfActions.pdfScaleSet({ scale: scale / 1.2 })),
     }
   }
 )

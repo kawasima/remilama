@@ -6,7 +6,8 @@ const initialState = {
   id: null,
   name: null,
   file: null,
-  connected: false
+  connected: false,
+  failFile: null
 }
 
 export default handleActions({
@@ -28,6 +29,12 @@ export default handleActions({
     return {
       ...state,
       file: action.payload.file
+    }
+  },
+  [actions.reviewerShowFileFail]: (state, action) => {
+    return {
+      ...state,
+      failFile: action.payload.failFile
     }
   }
 }, initialState)

@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import uuidv4 from 'uuid/v4'
 import Home from '../components/Home'
 import reviewActions from '../actions/review-actions'
+import reviewerActions from '../actions/reviewer-actions'
 
 function HomeContainer(props) {
   return (
@@ -17,14 +18,11 @@ const connector = connect(
     return {
       onJoinReview: (values, form, cb) => {
         props.history.push('/review/' + values.review_id + '/reviewer')
-        dispatch({
-          type: 'JOIN_REVIEW',
-          reviewId: values.review_id,
-          reviewer: {
-            id: uuidv4(),
-            name: values.reviewer_name
-          }
-        })
+        dispatch(reviewerActions.reviewerJoin({
+          id: uuidv4(),
+          name: values.reviewer_name,
+          reviewId: values.review_id
+        }))
       },
       onNewReview: e => {
         props.history.push('/review/new')

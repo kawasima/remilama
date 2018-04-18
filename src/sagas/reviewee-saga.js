@@ -5,7 +5,6 @@ import {
   fork,
   select,
   cancel,
-  takeLatest,
   takeEvery,
 } from 'redux-saga/effects'
 import { eventChannel } from 'redux-saga'
@@ -64,20 +63,30 @@ function* handleMessage(action) {
     }
     break
   case 'REVIEW_REVIEWER_REMOVE_REQUEST':
+    const reviewerId = yield select(s => {
+      return Object
+        .keys(s.reviewee.peers)
+        .find(k => action.payload.connection === s.reviewee.peers[k])
+    })
     yield put(revieweeActions.peerConnectionRemoved({
+      connection: action.payload.connection
     }))
-    yield put(reviewActions.reviewReviewerRemoved())
+    yield put(reviewActions.reviewReviewerRemoved({ reviewerId }))
     break
   case 'REVIEW_FILE_REQUEST':
     const file = fileObject.find(f => f.name === action.payload.filename)
-    const reader = new FileReader()
-    reader.onload = () => action.payload.connection.send(reviewActions.reviewFileResponse({
-      file: {
-        name: file.name,
-        blob: reader.result
-      }
-    }))
-    reader.readAsArrayBuffer(file)
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = () => action.payload.connection.send(reviewActions.reviewFileResponse({
+        file: {
+          name: file.name,
+          blob: reader.result
+        }
+      }))
+      reader.readAsArrayBuffer(file)
+    } else {
+      action.payload.connection.send(reviewActions.reviewFileErrorResponse())
+    }
     break
   case 'REVIEW_REVIEWER_UPDATE_REQUEST':
     yield put(reviewActions.reviewReviewerUpdated({...action.payload}))

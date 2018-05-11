@@ -2,15 +2,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-import ReviewCreateFormTemplate from '../components/templates/ReviewCreateFormTemplate'
+import ReviewCreateFormTemplate from '../../templates/ReviewCreateFormTemplate'
 import uuidv4 from 'uuid/v4'
-import actions from '../actions/review-actions'
+import actions from '../../../actions/review-actions'
 
-function ReviewCreateFormPage(props) {
-  return (
-    <ReviewCreateFormTemplate {...props}/>
-  )
-}
+const ReviewCreateFormPage = props => <ReviewCreateFormTemplate {...props}/>
 
 const connector = connect(
   ({ review }) => review,
@@ -62,4 +58,4 @@ const connector = connect(
     }
   }
 )
-export default withRouter(connector(ReviewCreateFormContainer))
+export default withRouter(connector(ReviewCreateFormPage))

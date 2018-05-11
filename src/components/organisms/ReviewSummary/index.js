@@ -22,12 +22,12 @@ const renderFile = ({file, onReSelectFile, onSelectFile, isReviewee}) => {
         (
           <span>
             <span>{file.name}</span>
-            <SelectReviewFile onSelectFile={onReSelectFile}/>
+            <PdfFileUploadField onSelectFile={onReSelectFile}/>
           </span>
         )
         :
         (
-          <a onClick={() => onSelectFile(file.name)}
+          <a onClick={() => onSelectFile(file.name, file.object)}
             style={{cursor: 'pointer'}}>
             {file.name}
           </a>
@@ -39,7 +39,7 @@ const renderFile = ({file, onReSelectFile, onSelectFile, isReviewee}) => {
   )
 }
 
-class Review extends React.Component {
+class ReviewSummary extends React.Component {
   state = {
     isCopying: false
   }
@@ -94,7 +94,7 @@ class Review extends React.Component {
   }
 }
 
-Review.propTypes = {
+ReviewSummary.propTypes = {
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   files: PropTypes.array,
@@ -104,4 +104,4 @@ Review.propTypes = {
   isReviewee: PropTypes.bool
 }
 
-export default Review
+export default ReviewSummary

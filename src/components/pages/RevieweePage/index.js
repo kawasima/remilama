@@ -1,10 +1,13 @@
-/* global FileReader */
+/* global window */
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import detectPort from '../../../utils/detectPort'
+
 import reviewActions from '../../../actions/review-actions'
 import reviewerActions from '../../../actions/reviewer-actions'
 import pdfActions from '../../../actions/pdf-actions'
+import ReviewTemplate from '../../templates/ReviewTemplate'
 
 class RevieweeContainer extends Component {
   constructor(props) {
@@ -40,10 +43,20 @@ const connector = connect(
   ({ review, reviewer, pdf, fileObject }) => {
     return { review, reviewer, pdf, fileObject }
   },
-  dispatch => {
+  (dispatch, ownProps) => {
     return {
+      onSelectFile: (filename, fileObject) => {
+        const reader = new FileReader()
+        reader.onload = () => dispatch(
+          reviewerActions.reviewerShowFile({
+            file: {
+              name: filename,
+              blob: reader.result
+            }
+          }))
+        reader.readAsArrayBuffer(fileObject)
+      },
       onDocumentComplete: numPages => dispatch(pdfActions.pdfNumPagesSet({ numPages })),
-      onSelectFile: file => dispatch(pdfActions.pdfShow({ file })),
       onNext: page => dispatch(pdfActions.pdfPageGo({ page: page + 1 })),
       onPrevious: page => dispatch(pdfActions.pdfPageGo({ page: page - 1 })),
       onGoToPage: page => dispatch(pdfActions.pdfPageGo({ page })),

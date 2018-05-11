@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import DocumentControls from '../../molecules/DocumentControls'
+import ReviewComment from '../../molecules/ReviewComment'
 import PdfDocument from '../../atoms/PdfDocument'
 
 function extractComments({ review, reviewer, filename, page, scale }) {
@@ -40,9 +41,7 @@ const ReviewDocumentViewer = (props) => (props.file || props.binaryContent) ?
         </div>
       )
       :
-      (
-        <SelectReviewFile {...this.props} />
-      )
+      null
 
 ReviewDocumentViewer.propTypes = {
     filename: PropTypes.string,

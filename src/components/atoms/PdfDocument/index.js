@@ -181,7 +181,7 @@ f
     this.renderPdf()
     const { onPageComplete, filename } = this.props
     if (typeof onPageComplete === 'function') {
-      onPageComplete(page.pageIndex + 1, filename)
+      onPageComplete(page.pageIndex + 1, filename, this.props.reviewer)
     }
   }
 

@@ -4,9 +4,10 @@ import isArrayBuffer from 'is-array-buffer'
 import { required, composeValidators, mustBeUUID } from '../../../validators'
 
 import Loading from '../../atoms/Loading'
-import ReviewSummary from '../../organisms/ReviewSummary'
+import Reviewer from '../../molecules/Reviewer'
 import ReviewCommentTable from '../../molecules/ReviewCommentTable'
-
+import ReviewSummary from '../../organisms/ReviewSummary'
+import ReviewDocumentViewer from '../../organisms/ReviewDocumentViewer'
 
 const renderJoinForm = ({ handleSubmit, pristine, invalid }) => {
     const { reviewer } = this.props
@@ -52,29 +53,20 @@ const renderDocumentView = (props) => isArrayBuffer(props.reviewer.file && props
           review={props.review}
           reviewer={props.reviewer}
           filename={props.reviewer.file.name}
+          fileObject={props.fileObject}
           binaryContent={props.reviewer.file.blob}
+          onZoomIn={props.onZoomIn}
+          onZoomOut={props.onZoomOut}
+          onNext={props.onNext}
+          onPrevious={props.onPrevious}
           onMoveComment={props.onMoveComment}
           onUpdateComment={props.onUpdateComment}
           onDeleteComment={props.onDeleteComment}
           onPageComplete={props.onPageComplete}
-          onPageClick={props.onPostComment} />
+          onPageClick={(filename, page, x, y, scale) => props.onPostComment(filename, page, x, y, scale, props.reviewer)} />
       )
       :
       null
-
-const onSelectFile = filename => {
-    const { fileObject, dispatch } = this.props
-    const file = fileObject.find(f => f.name === filename)
-    const reader = new FileReader()
-    reader.onload = () => dispatch(reviewerActions.reviewerShowFile({
-      file: {
-        name: file.name,
-        blob: reader.result
-      }
-    }))
-    reader.readAsArrayBuffer(file)
-  }
-
 
 const renderCommentTable = (props) => (props.review.comments.length > 0) ?
       (
@@ -84,11 +76,16 @@ const renderCommentTable = (props) => (props.review.comments.length > 0) ?
           customValues={props.review.customValues}
           onChangeCustomValue={props.onChangeCustomValue}
           onGoToPage={props.onGoToPage}
-          onSelectFile={filename => onSelectFile(filename, file)}
+          onSelectFile={filename => props.onSelectFile(filename, props.fileObject)}
           />
       ) : null
 
-const renderLoading = (props) => (props.reviewer || {}).connected ? null : (<Loading/>)
+const renderLoading = (props) => {
+  if (props.isReviewer && !(props.reviewer || {}).connected) {
+    return (<Loading/>)
+  }
+  return null
+}
 
 const renderReviewers = (reviewers) => {
   return reviewers.map(reviewer => <Reviewer key={reviewer.id} reviewer={reviewer} /> )
@@ -109,7 +106,7 @@ const ReviewTemplate = (props) => (
       onSelectFile={props.onSelectFile}
       onReSelectFile={props.onReSelectFile}
       fileObject={props.fileObject}
-      isReviewee={true}/>
+      isReviewer={props.isReviewer}/>
 
     {renderReviewers(props.review.reviewers)}
     {renderDocumentView(props)}

@@ -1,17 +1,13 @@
 import {
-  race,
   take,
   put,
-  fork,
   select,
-  cancel,
   takeEvery,
 } from 'redux-saga/effects'
 import { eventChannel } from 'redux-saga'
 import Peer from 'peerjs'
 
 import reviewActions from '../actions/review-actions'
-import reviewerActions from '../actions/reviewer-actions'
 import revieweeActions from '../actions/reviewee-actions'
 
 function* broadcastToPeers(action) {
@@ -39,7 +35,7 @@ function* handleMessage(action) {
     return { review, fileObject}
   })
   switch(action.type) {
-  case `${revieweActions.reviewInfoResponse}`:
+  case `${reviewActions.reviewInfoResponse}`:
     action.payload.connection.send(reviewActions.reviewInfoResponse({
       review: {
         id: review.id,

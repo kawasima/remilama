@@ -1,15 +1,12 @@
+/* global window */
 import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import uuidv4 from 'uuid/v4'
-import isArrayBuffer from 'is-array-buffer'
-import ReviewSummary from '../../atoms/ReviewSummary'
-import Modal from '../../Modal'
-import Loading from '../../atoms/Loading'
-import ReviewerNameField from '../atoms/ReviewerNameField'
-import { Form, Field } from 'react-final-form'
-import detectPort from '../utils/detectPort'
-import reviewActions from '../actions/review-actions'
+import detectPort from '../../../utils/detectPort'
+import reviewActions from '../../../actions/review-actions'
+import pdfActions from '../../../actions/pdf-actions'
+import ReviewTemplate from '../../templates/ReviewTemplate'
 
 class ReviewerPage extends React.Component {
   static propTypes = {
@@ -28,7 +25,10 @@ class ReviewerPage extends React.Component {
   }
 
   render() {
-    return (<ReviewTemplate {...props}/>)
+    return (
+      <ReviewTemplate isReviewer={true}
+                      {...this.props} />
+    )
   }
 }
 
@@ -40,23 +40,30 @@ const connector = connect(
       pdf
     }
   },
-  (dispatch, ownProps) => {
+  dispatch => {
     return {
+      onDocumentComplete: numPages => dispatch(pdfActions.pdfNumPagesSet({ numPages })),
+      onNext: page => dispatch(pdfActions.pdfPageGo({ page: page + 1 })),
+      onPrevious: page => dispatch(pdfActions.pdfPageGo({ page: page - 1 })),
+      onGoToPage: page => dispatch(pdfActions.pdfPageGo({ page })),
+      onZoomIn: scale => dispatch(pdfActions.pdfScaleSet({ scale: scale * 1.2 })),
+      onZoomOut: scale => dispatch(pdfActions.pdfScaleSet({ scale: scale / 1.2 })),
+
       onDeleteComment: id => dispatch(reviewActions.reviewCommentRemoveRequest({
         id: id
       })),
-      onPageComplete: (filename, page) => {
+      onPageComplete: (filename, page, reviewer) => {
         dispatch(reviewActions.reviewReviewerUpdateRequest({
           reviewer: {
-            id: ownProps.reviewer.id,
+            id: reviewer.id,
             action: `Show the ${page} page on ${filename}`
           }
         }))
       },
-      onSelectFile = filename => dispatch(reviewActions.reviewFileRequest({
+      onSelectFile: filename => dispatch(reviewActions.reviewFileRequest({
         filename: filename
       })),
-      onPostComment: (filename, page, x, y, scale) =>
+      onPostComment: (filename, page, x, y, scale, reviewer) =>
         dispatch(reviewActions.reviewCommentAddRequest({
           id: uuidv4(),
           postedAt: new Date().getTime(),
@@ -95,4 +102,5 @@ const connector = connect(
     }
   }
 )
+
 export default connector(ReviewerPage)

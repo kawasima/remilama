@@ -1,6 +1,6 @@
+/* global module */
 import React from 'react'
 import { storiesOf } from '@storybook/react'
-import { action, configureActions } from '@storybook/addon-actions'
 
 import HotTable from './'
 

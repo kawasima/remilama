@@ -1,4 +1,10 @@
 import React from 'react'
+import styled from 'styled-components'
+
+const NavButton = styled.div`
+  cursor: pointer;
+`
+
 
 export default class DocumentPagination extends React.Component {
   state = {
@@ -19,24 +25,34 @@ export default class DocumentPagination extends React.Component {
     } = this.props
 
     let previousButton = (
-      <div className="item" onClick={e => onPrevious(page)}>
+      <NavButton className="item" onClick={
+             e => {
+               e.preventDefault()
+               onPrevious(page)
+             }
+        }>
         <i className="chevron left icon"></i>
-      </div>)
+      </NavButton>)
 
     if (page === 1) {
       previousButton = (
-        <div className="item disabled">
+        <NavButton className="item disabled">
           <i className="chevron left icon"></i>
-        </div>)
+        </NavButton>)
     }
 
     let nextButton = (
-      <div className="item" onClick={e => onNext(page)}>
+      <NavButton className="item" onClick={
+             e => {
+               e.preventDefault()
+               onNext(page)
+             }
+        }>
         <i className="chevron right icon"></i>
-      </div>
+      </NavButton>
     )
     if (page === numPages) {
-      nextButton = <div className="item disabled"><i className="chevron right icon"></i></div>
+      nextButton = <NavButton className="item disabled"><i className="chevron right icon"></i></NavButton>
     }
 
     return (

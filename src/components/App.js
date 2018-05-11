@@ -1,13 +1,13 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import HTML5Backend from 'react-dnd-html5-backend'
 import { DragDropContext } from 'react-dnd'
 
 import Layout from './Layout'
-import HomePage from '../pages/HomePage'
-import ReviewerPage from '../pages/ReviewerPage'
-import RevieweePage from '../pages/RevieweePage'
-import ReviewCreateFormPage from '../pages/ReviewCreateFormPage'
+import HomePage from './pages/HomePage'
+import ReviewerPage from './pages/ReviewerPage'
+import RevieweePage from './pages/RevieweePage'
+import ReviewCreateFormPage from './pages/ReviewCreateFormPage'
 
 const App = () => {
   const routing = (

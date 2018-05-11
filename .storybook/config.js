@@ -1,3 +1,4 @@
+/* global module */
 import React from 'react'
 import { configure, addDecorator } from '@storybook/react'
 import { withInfo, setDefaults } from '@storybook/addon-info'

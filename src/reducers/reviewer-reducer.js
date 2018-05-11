@@ -30,11 +30,5 @@ export default handleActions({
       ...state,
       file: action.payload.file
     }
-  },
-  [actions.reviewerShowFileFail]: (state, action) => {
-    return {
-      ...state,
-      failFile: action.payload.failFile
-    }
   }
 }, initialState)

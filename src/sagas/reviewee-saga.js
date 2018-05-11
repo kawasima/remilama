@@ -39,7 +39,7 @@ function* handleMessage(action) {
     return { review, fileObject}
   })
   switch(action.type) {
-  case 'REVIEW_INFO_RESPONSE':
+  case `${revieweActions.reviewInfoResponse}`:
     action.payload.connection.send(reviewActions.reviewInfoResponse({
       review: {
         id: review.id,
@@ -49,7 +49,8 @@ function* handleMessage(action) {
       }
     }))
     break
-  case 'REVIEW_REVIEWER_ADD_REQUEST':
+
+  case `${reviewActions.reviewReviewerAddRequest}`:
     yield put(revieweeActions.peerConnectionAdded({
       reviewer: action.payload.reviewer,
       connection: action.payload.connection
@@ -62,7 +63,8 @@ function* handleMessage(action) {
       yield put(reviewActions.reviewReviewerAdded(action.payload.reviewer))
     }
     break
-  case 'REVIEW_REVIEWER_REMOVE_REQUEST':
+
+  case `${reviewActions.reviewReviewerRemoveRequest}`:
     const reviewerId = yield select(s => {
       return Object
         .keys(s.reviewee.peers)
@@ -73,7 +75,8 @@ function* handleMessage(action) {
     }))
     yield put(reviewActions.reviewReviewerRemoved({ reviewerId }))
     break
-  case 'REVIEW_FILE_REQUEST':
+
+  case `${reviewActions.reviewFileRequest}`:
     const file = fileObject.find(f => f.name === action.payload.filename)
     if (file) {
       const reader = new FileReader()
@@ -85,22 +88,29 @@ function* handleMessage(action) {
       }))
       reader.readAsArrayBuffer(file)
     } else {
-      action.payload.connection.send(reviewActions.reviewFileErrorResponse())
+      action.payload.connection.send(reviewActions.reviewFileResponse(
+        new Error('Can\'t read file')
+      ))
     }
     break
-  case 'REVIEW_REVIEWER_UPDATE_REQUEST':
+
+  case `${reviewActions.reviewReviewerUpdateRequest}`:
     yield put(reviewActions.reviewReviewerUpdated({...action.payload}))
     break
-  case 'REVIEW_COMMENT_ADD_REQUEST':
+
+  case `${reviewActions.reviewReviewerAddRequest}`:
     yield put(reviewActions.reviewCommentAdded({...action.payload}))
     break
-  case 'REVIEW_COMMENT_UPDATE_REQUEST':
+
+  case `${reviewActions.reviewCommentUpdateRequest}`:
     yield put(reviewActions.reviewCommentUpdated({...action.payload}))
     break
-  case 'REVIEW_COMMENT_MOVE_REQUEST':
+
+  case `${reviewActions.reviewCommentMoveRequest}`:
     yield put(reviewActions.reviewCommentMoved({...action.payload}))
     break
-  case 'REVIEW_COMMENT_REMOVE_REQUEST':
+
+  case `${reviewActions.reviewCommentRemoveRequest}`:
     yield put(reviewActions.reviewCommentRemoved({...action.payload}))
     break
   }

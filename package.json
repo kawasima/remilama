@@ -18,6 +18,7 @@
   "main": "index.js",
   "scripts": {
     "start": "cross-env NODE_ENV=development node app.js",
+    "storybook": "start-storybook --port=6006",
     "test": "jest",
     "test:watch": "yarn run test -o --watch",
     "build": "webpack --config webpack.config.production.js",
@@ -25,43 +26,10 @@
   },
   "author": "kawasima",
   "license": "MIT",
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "browsers": [
-              "last 2 versions",
-              "safari >= 7"
-            ]
-          }
-        }
-      ]
-    ],
-    "plugins": [
-      "@babel/plugin-transform-react-jsx",
-      "@babel/plugin-transform-async-to-generator",
-      "@babel/plugin-syntax-dynamic-import",
-      [
-        "@babel/plugin-proposal-object-rest-spread",
-        {
-          "loose": true,
-          "useBuiltIns": true
-        }
-      ],
-      "@babel/plugin-proposal-class-properties"
-    ],
-    "env": {
-      "development": {
-        "plugins": [
-          "react-hot-loader/babel"
-        ]
-      }
-    }
-  },
   "dependencies": {
+    "@storybook/addon-info": "^3.4.3",
     "body-parser": "^1.18.2",
+    "classnames": "^2.2.5",
     "cors": "^2.8.4",
     "express": "^4.16.3",
     "final-form": "^4.4.0",
@@ -70,11 +38,11 @@
     "optimist": "^0.6.1",
     "pdfjs-dist": "^2.0.487",
     "peerjs": "^0.3.14",
-    "react": "^16.3.1",
+    "react": "^16.3.2",
     "react-copy-to-clipboard": "^5.0.1",
     "react-dnd": "^2.6.0",
     "react-dnd-html5-backend": "^2.6.0",
-    "react-dom": "^16.3.1",
+    "react-dom": "^16.3.2",
     "react-final-form": "^3.1.5",
     "react-modal": "^3.3.2",
     "react-redux": "^5.0.7",
@@ -87,20 +55,26 @@
     "redux-persist": "^5.9.1",
     "redux-promise": "^0.5.3",
     "redux-saga": "^0.16.0",
+    "styled-components": "^3.2.6",
     "uuid": "^3.2.1",
     "ws": "~0.4.25"
   },
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.44",
-    "@babel/core": "^7.0.0-beta.44",
-    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.44",
-    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.44",
-    "@babel/plugin-syntax-dynamic-import": "^7.0.0-beta.44",
-    "@babel/plugin-transform-async-to-generator": "^7.0.0-beta.44",
-    "@babel/plugin-transform-react-jsx": "^7.0.0-beta.44",
-    "@babel/plugin-transform-runtime": "^7.0.0-beta.44",
-    "@babel/preset-env": "^7.0.0-beta.44",
-    "@babel/runtime": "^7.0.0-beta.44",
+    "@babel/cli": "^7.0.0-beta.46",
+    "@babel/core": "^7.0.0-beta.46",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-beta.46",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.46",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0-beta.46",
+    "@babel/plugin-transform-async-to-generator": "^7.0.0-beta.46",
+    "@babel/plugin-transform-react-jsx": "^7.0.0-beta.46",
+    "@babel/plugin-transform-runtime": "^7.0.0-beta.46",
+    "@babel/preset-env": "^7.0.0-beta.46",
+    "@babel/runtime": "^7.0.0-beta.46",
+    "@storybook/addon-actions": "^3.4.3",
+    "@storybook/addon-links": "^3.4.3",
+    "@storybook/addon-options": "^3.4.3",
+    "@storybook/react": "^3.4.3",
+    "@storybook/storybook-deployer": "^2.3.0",
     "babel-loader": "8.0.0-beta.2",
     "cross-env": "^5.1.4",
     "css-loader": "^0.28.11",

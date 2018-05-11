@@ -36,14 +36,14 @@ function* peerConnect(peer, reviewId) {
         emit(reviewerActions.reviewerConnected())
         break
       case `${reviewActions.reviewFileResponse}`:
-        emit(reviewerActions.reviewerShowFile({
-          file: action.payload.file
-        }))
+        if (action.error) {
+          console.log(action.payload)
+        } else {
+          emit(reviewerActions.reviewerShowFile({
+            file: action.payload.file
+          }))
+        }
         break
-      case `${reviewActions.reviewFileErrorResponse}`:
-        emit(reviewerActions.reviewerShowFileFail({
-          failFile: action.payload.file
-        }))
       case `${reviewActions.reviewCommentsPropagated}`:
         emit(action)
         break

@@ -4,21 +4,18 @@ import HTML5Backend from 'react-dnd-html5-backend'
 import { DragDropContext } from 'react-dnd'
 
 import Layout from './Layout'
-import HomeContainer from '../containers/HomeContainer'
-import ReviewerContainer from '../containers/ReviewerContainer'
-import RevieweeContainer from '../containers/RevieweeContainer'
-import ReviewCreateFormContainer from '../containers/ReviewCreateFormContainer'
-
-import PdfContainer from '../containers/PdfContainer'
+import HomePage from '../pages/HomePage'
+import ReviewerPage from '../pages/ReviewerPage'
+import RevieweePage from '../pages/RevieweePage'
+import ReviewCreateFormPage from '../pages/ReviewCreateFormPage'
 
 const App = () => {
   const routing = (
     <Switch>
-      <Route exact path='/' component={HomeContainer} />
-      <Route path='/review/new' component={ReviewCreateFormContainer}/>
-      <Route path='/review/:id/reviewer' component={ReviewerContainer}/>
-      <Route path='/review/:id' component={RevieweeContainer}/>
-      <Route exact path='/pdf' component={PdfContainer}/>
+      <Route exact path='/' component={HomePage} />
+      <Route path='/review/new' component={ReviewCreateFormPage}/>
+      <Route path='/review/:id/reviewer' component={ReviewerPage}/>
+      <Route path='/review/:id' component={RevieweePage}/>
     </Switch>)
 
   return (

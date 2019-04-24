@@ -1,6 +1,6 @@
 var util = require('./util');
 var bodyParser = require('body-parser');
-var WebSocketServer = require('ws').Server;
+var WebSocket = require('ws');
 var url = require('url');
 var cors = require('cors');
 
@@ -15,21 +15,21 @@ app._initializeWSS = function(server) {
   }
 
   var path = this.mountpath;
-  var path = path + (path[path.length - 1] != '/' ? '/' : '') + 'peerjs';
+  path = path + (path[path.length - 1] != '/' ? '/' : '') + 'peerjs';
 
   // Create WebSocket server as well.
-  this._wss = new WebSocketServer({ path: path, server: server});
+  this._wss = new WebSocket.Server({ path: path, server: server});
 
-  this._wss.on('connection', function(socket) {
-    var query = url.parse(socket.upgradeReq.url, true).query;
+  this._wss.on('connection', function(ws, req) {
+    var query = url.parse(req.url, true).query;
     var id = query.id;
     var token = query.token;
     var key = query.key;
-    var ip = socket.upgradeReq.socket.remoteAddress;
+    var ip = req.remoteAddress;
 
     if (!id || !token || !key) {
-      socket.send(JSON.stringify({ type: 'ERROR', payload: { msg: 'No id, token, or key supplied to websocket server' } }));
-      socket.close();
+      ws.send(JSON.stringify({ type: 'ERROR', payload: { msg: 'No id, token, or key supplied to websocket server' } }));
+      ws.close();
       return;
     }
 
@@ -39,35 +39,35 @@ app._initializeWSS = function(server) {
           if (!self._clients[key][id]) {
             self._clients[key][id] = { token: token, ip: ip };
             self._ips[ip]++;
-            socket.send(JSON.stringify({ type: 'OPEN' }));
+            ws.send(JSON.stringify({ type: 'OPEN' }));
           }
-          self._configureWS(socket, key, id, token);
+          self._configureWS(ws, key, id, token);
         } else {
-          socket.send(JSON.stringify({ type: 'ERROR', payload: { msg: err } }));
+          ws.send(JSON.stringify({ type: 'ERROR', payload: { msg: err } }));
         }
       });
     } else {
-      self._configureWS(socket, key, id, token);
+      self._configureWS(ws, key, id, token);
     }
   });
 };
 
-app._configureWS = function(socket, key, id, token) {
+app._configureWS = function(ws, key, id, token) {
 
   var self = this;
   var client = this._clients[key][id];
 
   if (token === client.token) {
     // res 'close' event will delete client.res for us
-    client.socket = socket;
+    client.ws = ws;
     // Client already exists
     if (client.res) {
       client.res.end();
     }
   } else {
     // ID-taken, invalid token
-    socket.send(JSON.stringify({ type: 'ID-TAKEN', payload: { msg: 'ID is taken' } }));
-    socket.close();
+    ws.send(JSON.stringify({ type: 'ID-TAKEN', payload: { msg: 'ID is taken' } }));
+    ws.close();
     return;
   }
 
@@ -75,20 +75,20 @@ app._configureWS = function(socket, key, id, token) {
 
   // Heartbeat
   const heartbeat = setInterval(function() {
-    socket.send(JSON.stringify({ type: 'HEARTBEAT'}))
+    ws.send(JSON.stringify({ type: 'HEARTBEAT'}))
   }, 15000)
 
   // Cleanup after a socket closes.
-  socket.on('close', function() {
+  ws.on('close', function() {
     self._log('Socket closed:', id);
-    if (client.socket == socket) {
+    if (client.ws == ws) {
       self._removePeer(key, id);
       clearInterval(heartbeat)
     }
   });
 
   // Handle messages from peers.
-  socket.on('message', function(data) {
+  ws.on('message', function(data) {
     try {
       var message = JSON.parse(data);
 
@@ -262,7 +262,7 @@ app._startStreaming = function(res, key, id, token, open) {
     // Client already exists
     res.on('close', function() {
       if (client.res === res) {
-        if (!client.socket) {
+        if (!client.ws) {
           // No new request yet, peer dead
           self._removePeer(key, id);
           return;
@@ -352,8 +352,8 @@ app._handleTransmission = function(key, message) {
   if (destination) {
     try {
       this._log(type, 'from', src, 'to', dst);
-      if (destination.socket) {
-        destination.socket.send(data);
+      if (destination.ws) {
+        destination.ws.send(data);
       } else if (destination.res) {
         data += '\n';
         destination.res.write(data);

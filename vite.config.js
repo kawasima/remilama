@@ -1,6 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import express from 'express'
+import { ExpressPeerServer } from 'peer'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -12,14 +18,12 @@ export default defineConfig({
     {
       name: 'peerjs-server',
       configureServer(server) {
-        const express = require('express')
-        const peer = require('./server')
         const app = express()
 
         // Capture upgrade listeners BEFORE PeerJS adds its own
         const existingUpgradeListeners = server.httpServer.listeners('upgrade').slice()
 
-        const peerServer = peer.ExpressPeerServer(server.httpServer, { debug: true })
+        const peerServer = ExpressPeerServer(server.httpServer, { debug: true })
         app.use('/peerjs', peerServer)
         server.middlewares.use(app)
 

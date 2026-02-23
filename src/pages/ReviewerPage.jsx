@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import Peer from 'peerjs'
 import { v4 as uuidv4 } from 'uuid'
 import isArrayBuffer from 'is-array-buffer'
-import { MessageSquareText, Radio } from 'lucide-react'
+import { MessageSquareText, Radio, Loader2 } from 'lucide-react'
 import useStore from '../store'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Button } from '../components/ui/button'
@@ -15,10 +15,15 @@ import ReviewCommentTable from '../components/ReviewCommentTable'
 import detectPort from '../utils/detectPort'
 import { required } from '../validators'
 
+const MAX_BACKOFF = 30000
+
 export default function ReviewerPage() {
   const { id: reviewIdFromUrl } = useParams()
   const peerRef = useRef(null)
   const dataConnectionRef = useRef(null)
+  const unmountedRef = useRef(false)
+  const backoffRef = useRef(2000)
+  const reconnectTimerRef = useRef(null)
 
   const review = useStore((s) => s.review)
   const reviewer = useStore((s) => s.reviewer)
@@ -29,6 +34,7 @@ export default function ReviewerPage() {
   const [reviewerName, setReviewerName] = useState('')
   const [touched, setTouched] = useState({})
   const [followMode, setFollowMode] = useState(true)
+  const [reconnecting, setReconnecting] = useState(false)
   const followModeRef = useRef(followMode)
   followModeRef.current = followMode
 
@@ -36,85 +42,148 @@ export default function ReviewerPage() {
   useEffect(() => {
     if (needsJoin) return
 
-    const peer = new Peer({
-      host: '/',
-      path: '/peerjs',
-      port: detectPort(window.location),
-      debug: 3,
-    })
-    peer.on('error', (err) => console.error('peer error:', err.type))
-
-    // Buffer for reassembling chunked file transfers
-    const fileChunks = {}
-
-    peer.on('open', () => {
-      const { reviewer: r } = useStore.getState()
-      const conn = peer.connect(r.reviewId, { serialization: 'json' })
-      conn.on('open', () => {
-        console.log('PeerJS connection opened')
-      })
-      conn.on('data', (message) => {
-        const store = useStore.getState()
-        switch (message.type) {
-          case 'REVIEW_INFO':
-            conn.send({
-              type: 'REVIEWER',
-              reviewer: { id: store.reviewer.id, name: store.reviewer.name },
-            })
-            store.createReview(message.review)
-            break
-          case 'FILE_CHUNK': {
-            const key = message.name
-            if (!fileChunks[key]) {
-              fileChunks[key] = { chunks: new Array(message.total), received: 0 }
-            }
-            const buf = fileChunks[key]
-            buf.chunks[message.index] = message.chunk
-            buf.received++
-            if (buf.received === message.total) {
-              const base64 = buf.chunks.join('')
-              delete fileChunks[key]
-              const binary = atob(base64)
-              const bytes = new Uint8Array(binary.length)
-              for (let i = 0; i < binary.length; i++) {
-                bytes[i] = binary.charCodeAt(i)
-              }
-              store.showFile({ name: key, blob: bytes.buffer })
-            }
-            break
-          }
-          case 'REVIEW/UPDATE_COMMENTS':
-            store.updateComments(message.comments)
-            break
-          case 'NAVIGATE':
-            // Follow reviewee's (reviewer's) document/page navigation
-            if (!followModeRef.current) break
-            if (message.filename) {
-              const currentFile = store.reviewer.file
-              if (!currentFile || currentFile.name !== message.filename) {
-                // Request the file we don't have yet
-                conn.send({ type: 'FILE_REQUEST', filename: message.filename })
-              }
-            }
-            if (message.page) {
-              store.goToPage(message.page)
-            }
-            break
-        }
-      })
-      conn.on('error', (err) => console.error('conn error:', err))
-
-      dataConnectionRef.current = conn
-    })
-
-    peerRef.current = peer
-
-    return () => {
+    function connectToPeer() {
+      // Clean up previous peer if any
       if (peerRef.current) {
         peerRef.current.disconnect()
         peerRef.current.destroy()
+        peerRef.current = null
+      }
+
+      const peer = new Peer({
+        host: '/',
+        path: '/peerjs',
+        port: detectPort(window.location),
+        debug: 3,
+      })
+
+      peer.on('error', (err) => {
+        console.error('peer error:', err.type)
+        // Peer-level errors (network, server unreachable) also trigger reconnect
+        if (!unmountedRef.current && (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error')) {
+          scheduleReconnect()
+        }
+      })
+
+      // Buffer for reassembling chunked file transfers
+      const fileChunks = {}
+
+      peer.on('open', () => {
+        const { reviewer: r } = useStore.getState()
+        const conn = peer.connect(r.reviewId, { serialization: 'json' })
+
+        conn.on('open', () => {
+          console.log('PeerJS connection opened')
+          backoffRef.current = 2000
+          setReconnecting(false)
+        })
+
+        conn.on('data', (message) => {
+          const store = useStore.getState()
+          switch (message.type) {
+            case 'REVIEW_INFO':
+              conn.send({
+                type: 'REVIEWER',
+                reviewer: { id: store.reviewer.id, name: store.reviewer.name },
+              })
+              store.createReview(message.review)
+              // Re-request the file that was shown before disconnect
+              {
+                const lastFile = store.reviewer.file?.name
+                if (lastFile) {
+                  conn.send({ type: 'FILE_REQUEST', filename: lastFile })
+                }
+              }
+              break
+            case 'FILE_CHUNK': {
+              const key = message.name
+              if (!fileChunks[key]) {
+                fileChunks[key] = { chunks: new Array(message.total), received: 0 }
+              }
+              const buf = fileChunks[key]
+              buf.chunks[message.index] = message.chunk
+              buf.received++
+              if (buf.received === message.total) {
+                const base64 = buf.chunks.join('')
+                delete fileChunks[key]
+                const binary = atob(base64)
+                const bytes = new Uint8Array(binary.length)
+                for (let i = 0; i < binary.length; i++) {
+                  bytes[i] = binary.charCodeAt(i)
+                }
+                store.showFile({ name: key, blob: bytes.buffer })
+              }
+              break
+            }
+            case 'REVIEW/UPDATE_COMMENTS':
+              store.updateComments(message.comments)
+              break
+            case 'NAVIGATE':
+              // Follow reviewee's document/page navigation
+              if (!followModeRef.current) break
+              if (message.filename) {
+                const currentFile = store.reviewer.file
+                if (!currentFile || currentFile.name !== message.filename) {
+                  conn.send({ type: 'FILE_REQUEST', filename: message.filename })
+                }
+              }
+              if (message.page) {
+                store.goToPage(message.page)
+              }
+              break
+          }
+        })
+
+        conn.on('close', () => {
+          console.log('PeerJS connection closed')
+          dataConnectionRef.current = null
+          if (!unmountedRef.current) {
+            scheduleReconnect()
+          }
+        })
+
+        conn.on('error', (err) => {
+          console.error('conn error:', err)
+        })
+
+        dataConnectionRef.current = conn
+      })
+
+      peerRef.current = peer
+    }
+
+    function scheduleReconnect() {
+      if (unmountedRef.current || reconnectTimerRef.current) return
+      setReconnecting(true)
+      const delay = backoffRef.current
+      backoffRef.current = Math.min(backoffRef.current * 2, MAX_BACKOFF)
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectTimerRef.current = null
+        if (!unmountedRef.current) {
+          connectToPeer()
+        }
+      }, delay)
+    }
+
+    connectToPeer()
+
+    return () => {
+      unmountedRef.current = true
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current)
+        reconnectTimerRef.current = null
+      }
+      if (peerRef.current) {
+        peerRef.current.disconnect()
+        peerRef.current.destroy()
+        peerRef.current = null
       }
     }
+  }, [needsJoin])
+
+  // Reset unmountedRef when effect re-runs
+  useEffect(() => {
+    unmountedRef.current = false
   }, [needsJoin])
 
   const handleJoinReview = (e) => {
@@ -268,15 +337,23 @@ export default function ReviewerPage() {
           <MessageSquareText className="h-5 w-5" />
           Review
         </CardTitle>
-        <Button
-          variant={followMode ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setFollowMode((v) => !v)}
-          title={followMode ? 'Follow mode ON: following presenter navigation' : 'Follow mode OFF: free navigation'}
-        >
-          <Radio className="h-4 w-4 mr-1.5" />
-          {followMode ? 'Follow ON' : 'Follow OFF'}
-        </Button>
+        <div className="flex items-center gap-2">
+          {reconnecting && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Reconnecting...
+            </span>
+          )}
+          <Button
+            variant={followMode ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setFollowMode((v) => !v)}
+            title={followMode ? 'Follow mode ON: following presenter navigation' : 'Follow mode OFF: free navigation'}
+          >
+            <Radio className="h-4 w-4 mr-1.5" />
+            {followMode ? 'Follow ON' : 'Follow OFF'}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <Review {...review} onSelectFile={handleSelectFile} />

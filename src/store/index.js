@@ -72,20 +72,34 @@ const useStore = create(
       addReviewer: ({ id, name }) =>
         set((state) => {
           if (!isNonEmptyString(id) || !isNonEmptyString(name)) return state
-          if (state.review.reviewers.find((r) => r.id === id)) return state
+          const sanitized = sanitizeString(name, 200)
+          // Match by name — reconnecting reviewers get a new id each time
+          const existingIdx = state.review.reviewers.findIndex((r) => r.name === sanitized)
+          if (existingIdx !== -1) {
+            return {
+              review: {
+                ...state.review,
+                reviewers: state.review.reviewers.map((r, i) =>
+                  i === existingIdx ? { ...r, id, online: true } : r
+                ),
+              },
+            }
+          }
           return {
             review: {
               ...state.review,
-              reviewers: [...state.review.reviewers, { id, name: sanitizeString(name, 200) }],
+              reviewers: [...state.review.reviewers, { id, name: sanitized, online: true }],
             },
           }
         }),
 
-      removeReviewer: (reviewerId) =>
+      setReviewerOffline: (reviewerId) =>
         set((state) => ({
           review: {
             ...state.review,
-            reviewers: state.review.reviewers.filter((r) => r.id !== reviewerId),
+            reviewers: state.review.reviewers.map((r) =>
+              r.id === reviewerId ? { ...r, online: false } : r
+            ),
           },
         })),
 
@@ -110,7 +124,7 @@ const useStore = create(
           return { review: { ...state.review, comments } }
         }),
 
-      addComment: ({ id, filename, postedBy, postedAt, page, x, y, category }) => {
+      addComment: ({ id, filename, postedBy, postedAt, page, x, y, description, category }) => {
         if (!isNonEmptyString(id)) return
         if (!isFiniteNumber(x) || !isFiniteNumber(y)) return
         if (!isFiniteNumber(page) || page < 1) return
@@ -130,7 +144,7 @@ const useStore = create(
                 page: Math.floor(page),
                 x,
                 y,
-                description: '',
+                description: typeof description === 'string' ? sanitizeString(description) : '',
                 category: cat,
               },
             ],

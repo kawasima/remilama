@@ -52,27 +52,23 @@ export default function RevieweePage() {
               ...dataConnectionsRef.current,
               [message.reviewer.id]: conn,
             }
-            const existing = store.review.reviewers.find(
-              (r) => r.name === message.reviewer.name
-            )
-            if (!existing) {
-              store.addReviewer(message.reviewer)
-            }
+            store.addReviewer(message.reviewer)
             break
           case 'FILE_REQUEST': {
             const file = store.fileObjects.find((f) => f.name === message.filename)
             const reader = new FileReader()
             reader.onload = () => {
-              // Convert ArrayBuffer to Base64 and send in chunks
-              // because PeerJS 0.3.14's binarypack can't serialize ArrayBuffer,
-              // and large JSON messages crash the WebRTC data channel.
+              // Convert ArrayBuffer to Base64 and send in chunks.
+              // PeerJS 1.x JSON serialization has a ~16KB message size limit,
+              // so chunk data must be small enough that the full JSON envelope
+              // (including metadata fields) stays under that threshold.
               const bytes = new Uint8Array(reader.result)
               let binary = ''
               for (let i = 0; i < bytes.byteLength; i++) {
                 binary += String.fromCharCode(bytes[i])
               }
               const base64 = btoa(binary)
-              const CHUNK_SIZE = 16 * 1024 // 16KB per chunk
+              const CHUNK_SIZE = 8 * 1024 // 8KB per chunk (safe for JSON serialization)
               const totalChunks = Math.ceil(base64.length / CHUNK_SIZE)
               for (let i = 0; i < totalChunks; i++) {
                 conn.send({
@@ -103,11 +99,12 @@ export default function RevieweePage() {
       })
 
       conn.on('close', () => {
-        const { review: r } = useStore.getState()
+        const { review: r, setReviewerOffline } = useStore.getState()
         const conns = dataConnectionsRef.current
         r.reviewers.forEach((rev) => {
           if (conns[rev.id] === conn) {
-            useStore.getState().removeReviewer(rev.id)
+            setReviewerOffline(rev.id)
+            delete conns[rev.id]
           }
         })
       })

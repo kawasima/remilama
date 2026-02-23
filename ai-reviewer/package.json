@@ -1,0 +1,18 @@
+{
+  "name": "remilama-ai-reviewer",
+  "version": "0.1.0",
+  "description": "AI Reviewer client for remilama — connects as a PeerJS reviewer and posts AI-generated comments",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@roamhq/wrtc": "^0.9.1",
+    "pdfjs-dist": "^4.10.38",
+    "peerjs": "^1.5.5",
+    "uuid": "^9.0.0",
+    "ws": "^8.18.0"
+  }
+}

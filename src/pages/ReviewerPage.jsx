@@ -41,6 +41,7 @@ export default function ReviewerPage() {
   // Connect to reviewee via PeerJS
   useEffect(() => {
     if (needsJoin) return
+    unmountedRef.current = false
 
     function connectToPeer() {
       // Clean up previous peer if any
@@ -61,6 +62,12 @@ export default function ReviewerPage() {
         console.error('peer error:', err.type)
         // Peer-level errors (network, server unreachable) also trigger reconnect
         if (!unmountedRef.current && (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error')) {
+          scheduleReconnect()
+        }
+      })
+
+      peer.on('disconnected', () => {
+        if (!unmountedRef.current) {
           scheduleReconnect()
         }
       })
@@ -179,11 +186,6 @@ export default function ReviewerPage() {
         peerRef.current = null
       }
     }
-  }, [needsJoin])
-
-  // Reset unmountedRef when effect re-runs
-  useEffect(() => {
-    unmountedRef.current = false
   }, [needsJoin])
 
   const handleJoinReview = (e) => {

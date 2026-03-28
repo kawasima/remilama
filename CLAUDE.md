@@ -57,6 +57,8 @@ ANTHROPIC_API_KEY=sk-xxx node index.js --server http://localhost:3000 --review-i
 OPENAI_BASE_URL=http://localhost:1234/v1 node index.js --server http://localhost:3000 --review-id <id> --provider openai --model <model-name>
 ```
 
+**Note**: `@roamhq/wrtc` may produce a segmentation fault on process exit (especially Node 25+). This is a known issue with the native addon's cleanup and is non-fatal — the review completes normally before the crash occurs.
+
 ### Comment Categories
 
 Defined in `src/lib/comment-categories.js`. Seven types (bug, missing, inconsistency, unclear, risk, maintainability, question) each with a distinct pin color. Category is validated against the allowed list in the store.

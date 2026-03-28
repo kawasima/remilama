@@ -53,6 +53,13 @@ export default function RevieweePage() {
               [message.reviewer.id]: conn,
             }
             store.addReviewer(message.reviewer)
+            // Send existing comments to the newly connected reviewer
+            if (store.review.comments.length > 0) {
+              conn.send({
+                type: 'REVIEW/UPDATE_COMMENTS',
+                comments: store.review.comments,
+              })
+            }
             break
           case 'FILE_REQUEST': {
             const file = store.fileObjects.find((f) => f.name === message.filename)
@@ -63,11 +70,13 @@ export default function RevieweePage() {
               // so chunk data must be small enough that the full JSON envelope
               // (including metadata fields) stays under that threshold.
               const bytes = new Uint8Array(reader.result)
-              let binary = ''
-              for (let i = 0; i < bytes.byteLength; i++) {
-                binary += String.fromCharCode(bytes[i])
+              // Build binary string in 8KB slices to avoid excessive memory from string concatenation
+              const SLICE = 8192
+              const parts = []
+              for (let i = 0; i < bytes.byteLength; i += SLICE) {
+                parts.push(String.fromCharCode(...bytes.subarray(i, i + SLICE)))
               }
-              const base64 = btoa(binary)
+              const base64 = btoa(parts.join(''))
               const CHUNK_SIZE = 8 * 1024 // 8KB per chunk (safe for JSON serialization)
               const totalChunks = Math.ceil(base64.length / CHUNK_SIZE)
               for (let i = 0; i < totalChunks; i++) {
